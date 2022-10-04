@@ -1,0 +1,27 @@
+modLoader="javafml" #mandatory
+loaderVersion="[43,)" #mandatory
+license="MIT"
+issueTrackerURL="https://github.com/ChiefArug/kindled/issues" #optional
+[[mods]] #mandatory
+modId="kindled" #mandatory
+version="0.0.0" #mandatory
+displayName="kindled" #mandatory
+displayURL="https://www.curseforge.com/minecraft/mc-mods/kindled/" #optional
+logoFile="pack.png" #optional
+authors="ChiefArug" #optional
+displayTest="MATCH_VERSION"
+description='''
+Spooky scary stuff
+'''
+[[dependencies.kindled]] #optional
+    modId="forge" #mandatory
+    mandatory=true #mandatory
+    versionRange="[43,)" #mandatory
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.kindled]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.19.2,1.20)"
+    ordering="NONE"
+    side="BOTH"
