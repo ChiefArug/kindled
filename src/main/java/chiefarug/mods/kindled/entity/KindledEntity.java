@@ -86,7 +86,7 @@ public class KindledEntity extends Monster implements Enemy {
 	protected void registerGoals() {
 		this.goalSelector.addGoal(1, new KindledAttackGoal());
 
-		this.targetSelector.addGoal(1, new KindledNearestAttackGoal<>(this, Player.class));
+		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
 	public KindledEntity(EntityType<? extends KindledEntity> type, Level level) {
@@ -152,10 +152,8 @@ public class KindledEntity extends Monster implements Enemy {
 		Item item = heldItem.getItem();
 		if (candles.containsKey(item)) {
 			setColor(candles.get(item));
-			player.sendSystemMessage(Component.literal("YOU CLICKED THY PUMPYKIN " + item));
-			LGGR.info(String.valueOf(this.yBodyRot));
-			this.setYBodyRot(this.yBodyRot + 100);
-			LGGR.info(String.valueOf(this.yBodyRot));
+			//setYBodyRot(yBodyRot + 70);
+			spin();
 			return InteractionResult.CONSUME;
 		}
 		return InteractionResult.PASS;
@@ -235,6 +233,9 @@ public class KindledEntity extends Monster implements Enemy {
 			if (KindledEntity.this.yBodyRot % 90 != 0) {
 				int newRot = Math.round(KindledEntity.this.yBodyRot / 90) * 90;
 				KindledEntity.this.setYBodyRot(newRot);
+				setCustomName(Component.literal(String.valueOf(yBodyRot)));
+				setCustomNameVisible(true);
+				setYRot(yBodyRot);
 			}
 		}
 	}
@@ -269,20 +270,44 @@ public class KindledEntity extends Monster implements Enemy {
 			return true;
 		}
 
+		private boolean wtf(Direction dir) {
+			LGGR.error("How on earth did this happen. Got direction " + dir + " from Direction#fromYRot, should only be north, south, east or west. (This is to make the compiler happy, if anyone actually sees this error message, sorry. I suggest your pray to the bit flip gods that this never happens again)");
+			return false;
+		}
+
+		private boolean isFacingTarget(LivingEntity target) {
+			Direction facing = Direction.fromYRot(kindled.yBodyRot);
+			target.sendSystemMessage(Component.literal(String.format("Facing %s with target pos %s and attacker pos %s", facing, target.position(), target.position())));
+			return switch (facing) {
+				case NORTH -> kindled.getZ() >= target.getZ();
+				case SOUTH -> kindled.getZ() <= target.getZ();
+				case WEST -> kindled.getX() >= target.getX();
+				case EAST -> kindled.getX() <= target.getX();
+				default -> wtf(facing);
+			};
+		}
+
 		@Override
 		public void tick() {
-			if (kindled.level.getDifficulty() == Difficulty.PEACEFUL || attackTime-- <= 0) return;
+			if (kindled.level.getDifficulty() == Difficulty.PEACEFUL || attackTime-- >= 0) return;
 
 			LivingEntity target = kindled.getTarget();
 			if (target == null) return;
-			kindled.lookControl.setLookAt(target);
 			if (kindled.distanceTo(target) <= 400D) {
-				this.attackTime = 20;
-				kindled.level.addFreshEntity(new ShulkerBullet(kindled.level, kindled, target, Direction.Axis.X));
+				this.attackTime = 20 + random.nextInt(30);
+				if (isFacingTarget(target)) {
+					kindled.level.addFreshEntity(new ShulkerBullet(kindled.level, kindled, target, Direction.Axis.X));
+				} else {
+					kindled.spin();
+				}
 			} else {
 				kindled.setTarget(null);
 			}
 		}
+	}
+
+	private void spin() {
+		setYBodyRot(random.nextBoolean() ? yBodyRot - 80 : yBodyRot + 80);
 	}
 
 	class PoofGoal extends BaseKindledGoal {
@@ -294,33 +319,5 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 	}
 
-	class KindledNearestAttackGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
-		protected final KindledEntity kindled = KindledEntity.this;
 
-		public KindledNearestAttackGoal(KindledEntity k, Class<T> target) {
-			super(k, target, true);
-		}
-
-		public boolean canUse() {
-			return kindled.level.getDifficulty() != Difficulty.PEACEFUL && super.canUse();
-		}
-
-		@Override
-		protected @NotNull AABB getTargetSearchArea(double distance) {
-			// Look for targets in an area directly in front of the entity
-			Direction facing = Direction.fromYRot(kindled.yBodyRot);
-			AABB aabb = kindled.getBoundingBox();
-			switch (facing.getAxis()) {
-				case X -> aabb = aabb.inflate(1, distance, distance);
-				case Z -> aabb = aabb.inflate(distance, distance, 1);
-			}
-			switch (facing) {
-				case NORTH -> aabb = aabb.expandTowards(0, 0, -distance);
-				case SOUTH -> aabb = aabb.expandTowards(0, 0, distance);
-				case WEST -> aabb = aabb.expandTowards(-distance, 0, 0);
-				case EAST -> aabb = aabb.expandTowards(distance, 0, 0);
-			}
-			return aabb;
-		}
-	}
 }
