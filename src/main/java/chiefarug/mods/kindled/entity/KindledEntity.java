@@ -24,9 +24,11 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.DyeColor;
@@ -34,6 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -82,6 +85,8 @@ public class KindledEntity extends Monster implements Enemy {
 	@Override
 	protected void registerGoals() {
 		this.goalSelector.addGoal(1, new KindledAttackGoal());
+
+		this.targetSelector.addGoal(1, new KindledNearestAttackGoal<>(this, Player.class));
 	}
 
 	public KindledEntity(EntityType<? extends KindledEntity> type, Level level) {
@@ -219,20 +224,17 @@ public class KindledEntity extends Monster implements Enemy {
 		return new KindledBodyControl(this);
 	}
 
-	static class KindledBodyControl extends BodyRotationControl {
-		protected final Mob mob;
-
+	class KindledBodyControl extends BodyRotationControl {
 		public KindledBodyControl(Mob pMob) {
 			super(pMob);
-			mob = pMob;
 		}
 
 		@Override
 		public void clientTick() {
-			if (mob.yBodyRot % 90 != 0) {
-				// Who cares about lerping
-				int newRot = Math.round(mob.yBodyRot / 90) * 90;
-				mob.setYBodyRot(newRot);
+			// Only let it face one of the cardinal directions
+			if (KindledEntity.this.yBodyRot % 90 != 0) {
+				int newRot = Math.round(KindledEntity.this.yBodyRot / 90) * 90;
+				KindledEntity.this.setYBodyRot(newRot);
 			}
 		}
 	}
@@ -277,6 +279,8 @@ public class KindledEntity extends Monster implements Enemy {
 			if (kindled.distanceTo(target) <= 400D) {
 				this.attackTime = 20;
 				kindled.level.addFreshEntity(new ShulkerBullet(kindled.level, kindled, target, Direction.Axis.X));
+			} else {
+				kindled.setTarget(null);
 			}
 		}
 	}
@@ -287,6 +291,36 @@ public class KindledEntity extends Monster implements Enemy {
 		@Override
 		public boolean canUse() {
 			return false;
+		}
+	}
+
+	class KindledNearestAttackGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
+		protected final KindledEntity kindled = KindledEntity.this;
+
+		public KindledNearestAttackGoal(KindledEntity k, Class<T> target) {
+			super(k, target, true);
+		}
+
+		public boolean canUse() {
+			return kindled.level.getDifficulty() != Difficulty.PEACEFUL && super.canUse();
+		}
+
+		@Override
+		protected @NotNull AABB getTargetSearchArea(double distance) {
+			// Look for targets in an area directly in front of the entity
+			Direction facing = Direction.fromYRot(kindled.yBodyRot);
+			AABB aabb = kindled.getBoundingBox();
+			switch (facing.getAxis()) {
+				case X -> aabb = aabb.inflate(1, distance, distance);
+				case Z -> aabb = aabb.inflate(distance, distance, 1);
+			}
+			switch (facing) {
+				case NORTH -> aabb = aabb.expandTowards(0, 0, -distance);
+				case SOUTH -> aabb = aabb.expandTowards(0, 0, distance);
+				case WEST -> aabb = aabb.expandTowards(-distance, 0, 0);
+				case EAST -> aabb = aabb.expandTowards(distance, 0, 0);
+			}
+			return aabb;
 		}
 	}
 }

@@ -37,10 +37,6 @@ public class KindledRenderer extends MobRenderer<KindledEntity, KindledModel> {
 		super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight);
 	}
 
-//	private boolean isSpooky() {
-//		return true;
-//	}
-
 
 	@Override
 	public @NotNull ResourceLocation getTextureLocation(@NotNull KindledEntity entity) {
