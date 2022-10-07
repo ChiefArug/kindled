@@ -32,3 +32,7 @@ public class Kindled {
 		event.put(KINDLED_ENTITY.get(), KindledEntity.createAttributes());
 	}
 }
+
+
+
+
