@@ -1,13 +1,11 @@
 package chiefarug.mods.kindled.entity;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -25,10 +23,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.DyeColor;
@@ -36,7 +32,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -72,6 +67,8 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
+	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
+	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
 	@Nullable
 	private DyeColor color;
 	private int poofTimer;
@@ -102,15 +99,18 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	@Override
-	public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> pKey) {
-		super.onSyncedDataUpdated(pKey);
-		if (DATA_COLOR_ID.equals(pKey)) {
+	public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key) {
+		super.onSyncedDataUpdated(key);
+		if (DATA_COLOR_ID.equals(key)) {
 			byte c = this.entityData.get(DATA_COLOR_ID);
 			if (c == 16) {
 				this.color = null;
 			} else {
 				this.color = DyeColor.byId(c);
 			}
+		}
+		if (DATA_ROTATION.equals(key) && level.isClientSide()) {
+			this.yBodyRot = this.entityData.get(DATA_ROTATION);
 		}
 	}
 
@@ -132,6 +132,7 @@ public class KindledEntity extends Monster implements Enemy {
 	protected void defineSynchedData() {
 		super.defineSynchedData();
 		this.entityData.define(DATA_COLOR_ID, (byte) 16);
+		this.entityData.define(DATA_ROTATION, this.yBodyRot);
 	}
 
 	@Override
@@ -146,9 +147,10 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	@Override
-	@NotNull
-	protected InteractionResult mobInteract(Player player, @NotNull InteractionHand hand) {
-		ItemStack heldItem = player.getItemInHand(hand);
+	@NotNull //DEBUG
+	protected InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
+		if (this.level.isClientSide()) return InteractionResult.PASS;
+			ItemStack heldItem = player.getItemInHand(hand);
 		Item item = heldItem.getItem();
 		if (candles.containsKey(item)) {
 			setColor(candles.get(item));
@@ -188,7 +190,7 @@ public class KindledEntity extends Monster implements Enemy {
 		tag.putByte("Color", color == null ? 16 : (byte) getColor().getId());
 	}
 
-	public boolean canPoof() {
+	public boolean isPoofReady() {
 		return poofTimer > 60;
 	}
 
@@ -213,7 +215,6 @@ public class KindledEntity extends Monster implements Enemy {
 
 	@Override
 	public boolean isPersistenceRequired() {
-		new KindledAttackGoal();
 		return true;
 	}
 
@@ -234,7 +235,7 @@ public class KindledEntity extends Monster implements Enemy {
 				int newRot = Math.round(KindledEntity.this.yBodyRot / 90) * 90;
 				KindledEntity.this.setYBodyRot(newRot);
 				setCustomName(Component.literal(String.valueOf(yBodyRot)));
-				setCustomNameVisible(true);
+				setCustomNameVisible(true); //DEBUG
 				setYRot(yBodyRot);
 			}
 		}
@@ -262,7 +263,7 @@ public class KindledEntity extends Monster implements Enemy {
 
 		@Override
 		public void start() {
-			attackTime = 40;
+			attackTime = 20;
 		}
 
 		@Override
@@ -277,12 +278,11 @@ public class KindledEntity extends Monster implements Enemy {
 
 		private boolean isFacingTarget(LivingEntity target) {
 			Direction facing = Direction.fromYRot(kindled.yBodyRot);
-			target.sendSystemMessage(Component.literal(String.format("Facing %s with target pos %s and attacker pos %s", facing, target.position(), target.position())));
 			return switch (facing) {
-				case NORTH -> kindled.getZ() >= target.getZ();
-				case SOUTH -> kindled.getZ() <= target.getZ();
-				case WEST -> kindled.getX() >= target.getX();
-				case EAST -> kindled.getX() <= target.getX();
+				case NORTH -> kindled.getZ() - 1.0D >= target.getZ();
+				case SOUTH -> kindled.getZ() + 1.0D <= target.getZ();
+				case WEST -> kindled.getX() - 1.0D >= target.getX();
+				case EAST -> kindled.getX() + 1.0D <= target.getX();
 				default -> wtf(facing);
 			};
 		}
@@ -294,7 +294,7 @@ public class KindledEntity extends Monster implements Enemy {
 			LivingEntity target = kindled.getTarget();
 			if (target == null) return;
 			if (kindled.distanceTo(target) <= 400D) {
-				this.attackTime = 20 + random.nextInt(30);
+				this.attackTime = 60 + random.nextInt(40);
 				if (isFacingTarget(target)) {
 					kindled.level.addFreshEntity(new ShulkerBullet(kindled.level, kindled, target, Direction.Axis.X));
 				} else {
@@ -306,8 +306,14 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 	}
 
+	private void turn(float f) {
+		setYBodyRot(f);
+		this.entityData.set(DATA_ROTATION, f);
+	}
+
 	private void spin() {
-		setYBodyRot(random.nextBoolean() ? yBodyRot - 80 : yBodyRot + 80);
+		float newRot = random.nextBoolean() ? yBodyRot - 80 : yBodyRot + 80;
+		turn(newRot);
 	}
 
 	class PoofGoal extends BaseKindledGoal {
