@@ -2,7 +2,6 @@ package chiefarug.mods.kindled.entity;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -39,6 +38,7 @@ import org.jetbrains.annotations.Range;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static chiefarug.mods.kindled.Kindled.LGGR;
 
@@ -102,12 +102,7 @@ public class KindledEntity extends Monster implements Enemy {
 	public void onSyncedDataUpdated(@NotNull EntityDataAccessor<?> key) {
 		super.onSyncedDataUpdated(key);
 		if (DATA_COLOR_ID.equals(key)) {
-			byte c = this.entityData.get(DATA_COLOR_ID);
-			if (c == 16) {
-				this.color = null;
-			} else {
-				this.color = DyeColor.byId(c);
-			}
+			setColor(this.entityData.get(DATA_COLOR_ID));
 		}
 		if (DATA_ROTATION.equals(key) && level.isClientSide()) {
 			this.yBodyRot = this.entityData.get(DATA_ROTATION);
@@ -120,12 +115,17 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	private void setColor(@Nullable DyeColor color) {
-		this.entityData.set(DATA_COLOR_ID, color == null ? 16 : (byte) color.getId());
+		setColor((byte) (color == null ? 16 : color.getId()));
 	}
 
 
 	private void setColor(@Range(from = 0, to = 16) byte color) {
-		setColor(DyeColor.byId(color));
+		this.entityData.set(DATA_COLOR_ID, color);
+		if (color == 16) {
+			this.color = null;
+		} else {
+			this.color = DyeColor.byId(color);
+		}
 	}
 
 	@Override
@@ -137,10 +137,36 @@ public class KindledEntity extends Monster implements Enemy {
 
 	@Override
 	public boolean hurt(@NotNull DamageSource source, float pAmount) {
+		Entity entity = source.getEntity();
+		if (entity instanceof Player) {
+			double xDif = this.getX() - entity.getX();
+			boolean xPositive = xDif >=0;
+			double zDif = this.getZ() - entity.getZ();
+			boolean zPositive = zDif >= 0;
+			// check which direction the player is in, and turn towards that
+			if (Math.abs(xDif) > Math.abs(zDif)) {
+				if (xPositive) {
+					turn(90);
+				} else {
+					turn(270);
+				}
+			} else {
+				if (zPositive) {
+					turn(180);
+				} else {
+					turn(0);
+				}
+			}
+			// for all running attack goals (there should really only be one), run the hurt method, which sets the attack timer to 5 ticks, but only for the first times
+			goalSelector.getRunningGoals().map(goal -> goal.getGoal() instanceof KindledAttackGoal attackGoal ? attackGoal : null).filter(Objects::nonNull).forEach(KindledAttackGoal::hurt);
+
+		}
+
 		if (source.isProjectile()) {
 			Entity entity1 = source.getDirectEntity();
 			if (entity1 != null && entity1.getType() == EntityType.SHULKER_BULLET) {
 				poofTimer += 5;
+				return false; // Otherwise, they just kill themselves
 			}
 		}
 		return super.hurt(source, pAmount);
@@ -179,7 +205,9 @@ public class KindledEntity extends Monster implements Enemy {
 	public void readAdditionalSaveData(@NotNull CompoundTag tag) {
 		super.readAdditionalSaveData(tag);
 		if (tag.contains("Color")) {
-			setColor(tag.getByte("Type"));
+			setColor(tag.getByte("Color"));
+		} else {
+			setColor(null);
 		}
 	}
 
@@ -234,8 +262,6 @@ public class KindledEntity extends Monster implements Enemy {
 			if (KindledEntity.this.yBodyRot % 90 != 0) {
 				int newRot = Math.round(KindledEntity.this.yBodyRot / 90) * 90;
 				KindledEntity.this.setYBodyRot(newRot);
-				setCustomName(Component.literal(String.valueOf(yBodyRot)));
-				setCustomNameVisible(true); //DEBUG
 				setYRot(yBodyRot);
 			}
 		}
@@ -247,16 +273,27 @@ public class KindledEntity extends Monster implements Enemy {
 
 	class KindledAttackGoal extends BaseKindledGoal {
 		private int attackTime;
+		private boolean hasAttackedDueToHit;
 
 		public KindledAttackGoal() {
 			this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+		}
+
+		void hurt() {
+			if ((!hasAttackedDueToHit) && attackTime > 5) {
+				attackTime = 5;
+				hasAttackedDueToHit = true;
+			}
 		}
 
 		@Override
 		public boolean canUse() {
 			LivingEntity target = kindled.getTarget();
 			if (target != null) {
-				return kindled.getLevel().getDifficulty() != Difficulty.PEACEFUL;
+				if (kindled.getLevel().getDifficulty() != Difficulty.PEACEFUL) {
+					hasAttackedDueToHit = false;
+					return true;
+				}
 			}
 			return false;
 		}
@@ -288,6 +325,11 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 
 		@Override
+		public void stop() {
+			hasAttackedDueToHit = false;
+		}
+
+		@Override
 		public void tick() {
 			if (kindled.level.getDifficulty() == Difficulty.PEACEFUL || attackTime-- >= 0) return;
 
@@ -307,12 +349,13 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	private void turn(float f) {
-		setYBodyRot(f);
-		this.entityData.set(DATA_ROTATION, f);
+		float newRot = random.nextBoolean() ? f - 10 : f + 10; // This offset by 10 will get almost immediately corrected by the BodyRotationController, creating a cool bounce back effect
+		setYBodyRot(newRot);
+		this.entityData.set(DATA_ROTATION, newRot);
 	}
 
 	private void spin() {
-		float newRot = random.nextBoolean() ? yBodyRot - 80 : yBodyRot + 80;
+		float newRot = random.nextBoolean() ? yBodyRot - 90 : yBodyRot + 90;
 		turn(newRot);
 	}
 
@@ -324,6 +367,4 @@ public class KindledEntity extends Monster implements Enemy {
 			return false;
 		}
 	}
-
-
 }
