@@ -8,6 +8,7 @@ version="0.0.0" #mandatory
 displayName="kindled" #mandatory
 displayURL="https://www.curseforge.com/minecraft/mc-mods/kindled/" #optional
 logoFile="pack.png" #optional
+logoBlur=false #optional
 authors="ChiefArug" #optional
 displayTest="MATCH_VERSION"
 description='''

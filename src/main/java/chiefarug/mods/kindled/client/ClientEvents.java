@@ -1,6 +1,6 @@
 package chiefarug.mods.kindled.client;
 
-import chiefarug.mods.kindled.Kindled;
+import chiefarug.mods.kindled.Registry;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -10,7 +10,7 @@ public class ClientEvents {
 
 	@SubscribeEvent
 	public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
-		event.registerEntityRenderer(Kindled.KINDLED_ENTITY.get(), KindledRenderer::new);
+		event.registerEntityRenderer(Registry.KINDLED_ENTITY.get(), KindledRenderer::new);
 	}
 
 	@SubscribeEvent

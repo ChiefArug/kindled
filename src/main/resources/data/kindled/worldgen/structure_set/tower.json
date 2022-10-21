@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "kindled:tower",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 12533265, // SuperMonkeySalt
+    "spacing": 5,
+    "separation": 4
+  }
+}
