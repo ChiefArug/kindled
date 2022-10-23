@@ -11,6 +11,7 @@ public class ClientEvents {
 	@SubscribeEvent
 	public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerEntityRenderer(Registry.KINDLED_ENTITY.get(), KindledRenderer::new);
+		event.registerEntityRenderer(Registry.KINDLED_BULLET_ENTITY.get(), KindledBulletRenderer::new);
 	}
 
 	@SubscribeEvent

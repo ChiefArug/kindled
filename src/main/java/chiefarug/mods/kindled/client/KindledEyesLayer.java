@@ -26,6 +26,10 @@ public class KindledEyesLayer extends EyesLayer<KindledEntity, KindledModel> {
 		}
 	}
 
+	public KindledEyesLayer(RenderLayerParent<KindledEntity, KindledModel> p_116981_) {
+		super(p_116981_);
+	}
+
 	private static RenderType renderTypeForColor(@Nullable DyeColor color) {
 		ResourceLocation rl = new ResourceLocation("kindled:textures/entity/kindled/eyes.png");
 		if (color != null) {
@@ -39,10 +43,6 @@ public class KindledEyesLayer extends EyesLayer<KindledEntity, KindledModel> {
 	public void render(@NotNull PoseStack pMatrixStack, MultiBufferSource pBuffer, int pPackedLight, @NotNull KindledEntity pLivingEntity, float pLimbSwing, float pLimbSwingAmount, float pPartialTicks, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
 		VertexConsumer vertexconsumer = pBuffer.getBuffer(renderType(pLivingEntity.getColor()));
 		this.getParentModel().renderToBuffer(pMatrixStack, vertexconsumer, 0, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-	}
-
-	public KindledEyesLayer(RenderLayerParent<KindledEntity, KindledModel> p_116981_) {
-		super(p_116981_);
 	}
 
 	@Override

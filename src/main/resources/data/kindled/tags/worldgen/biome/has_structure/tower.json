@@ -4,6 +4,7 @@
     "#minecraft:is_taiga",
     "#forge:is_desert",
     "#forge:is_plains",
-    "#minecraft:is_savanna"
+    "#minecraft:is_savanna",
+    "minecraft:sparse_jungle"
   ]
 }

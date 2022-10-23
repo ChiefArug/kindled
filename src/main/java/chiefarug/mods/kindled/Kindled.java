@@ -11,7 +11,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 @Mod(Kindled.MODID)
-@Mod.EventBusSubscriber(bus= Mod.EventBusSubscriber.Bus.MOD, modid = Kindled.MODID)
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = Kindled.MODID)
 public class Kindled {
 	public static final String MODID = "kindled";
 	@SuppressWarnings("unused")
@@ -22,8 +22,6 @@ public class Kindled {
 		Registry.register(bus);
 		bus.addListener(Kindled::registerAttributes);
 	}
-
-
 
 	public static void registerAttributes(EntityAttributeCreationEvent event) {
 		event.put(Registry.KINDLED_ENTITY.get(), KindledEntity.createAttributes());
@@ -38,9 +36,7 @@ public class Kindled {
 	/*
 	//TODO: structure
 	make sure all stair based jigsaws face the correct way
-	figure out why kindled arent spawning
-	increase jigsaw chain length
-
+	/place jigsaw kindled:tower/start down 7 ~64 ~ ~
 
 
 

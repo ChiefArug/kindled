@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +26,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -44,6 +44,14 @@ import static chiefarug.mods.kindled.Kindled.LGGR;
 
 public class KindledEntity extends Monster implements Enemy {
 
+	public static final EntityType<KindledEntity> ENTITY_TYPE = EntityType.Builder.of(KindledEntity::new, MobCategory.MONSTER)
+			.canSpawnFarFromPlayer()
+			.sized(1.0F, 1.0F)
+			.clientTrackingRange(10)
+			.build("kindled"); //TODO: check what the param passed to build does. Seems to just be datafixer stuff, but it is @NotNull
+	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
+	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
+	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
 	private static final Map<Item, DyeColor> candles = new HashMap<>();
 
 	static {
@@ -66,25 +74,9 @@ public class KindledEntity extends Monster implements Enemy {
 		candles.put(Items.BLACK_CANDLE, DyeColor.BLACK);
 	}
 
-	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
-	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
-	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
 	@Nullable
 	private DyeColor color;
 	private int poofTimer;
-
-	public static final EntityType<KindledEntity> ENTITY_TYPE = EntityType.Builder.of(KindledEntity::new, MobCategory.MONSTER)
-			.canSpawnFarFromPlayer()
-			.sized(1.0F, 1.0F)
-			.clientTrackingRange(10)
-			.build("kindled"); //TODO: check what the param passed to build does. Seems to just be datafixer stuff, but it is @NotNull
-
-	@Override
-	protected void registerGoals() {
-		this.goalSelector.addGoal(1, new KindledAttackGoal());
-
-		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
-	}
 
 	public KindledEntity(EntityType<? extends KindledEntity> type, Level level) {
 		super(type, level);
@@ -96,6 +88,13 @@ public class KindledEntity extends Monster implements Enemy {
 				.add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
 				.add(Attributes.ATTACK_DAMAGE, 4.0D)
 				.build();
+	}
+
+	@Override
+	protected void registerGoals() {
+		this.goalSelector.addGoal(1, new KindledAttackGoal());
+
+		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
 	@Override
@@ -140,7 +139,7 @@ public class KindledEntity extends Monster implements Enemy {
 		Entity entity = source.getEntity();
 		if (entity instanceof Player) {
 			double xDif = this.getX() - entity.getX();
-			boolean xPositive = xDif >=0;
+			boolean xPositive = xDif >= 0;
 			double zDif = this.getZ() - entity.getZ();
 			boolean zPositive = zDif >= 0;
 			// check which direction the player is in, and turn towards that
@@ -176,7 +175,7 @@ public class KindledEntity extends Monster implements Enemy {
 	@NotNull //DEBUG
 	protected InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
 		if (this.level.isClientSide()) return InteractionResult.PASS;
-			ItemStack heldItem = player.getItemInHand(hand);
+		ItemStack heldItem = player.getItemInHand(hand);
 		Item item = heldItem.getItem();
 		if (candles.containsKey(item)) {
 			setColor(candles.get(item));
@@ -194,12 +193,12 @@ public class KindledEntity extends Monster implements Enemy {
 
 	@Override
 	public void setPos(double x, double y, double z) {
-      if (this.isPassenger() || this.fallDistance > 0.0F) {
-         super.setPos(x, y, z);
-      } else {
-         super.setPos(Mth.floor(x) + 0.5D, y, Mth.floor(z) + 0.5D);
-      }
-   }
+		if (this.isPassenger() || this.fallDistance > 0.0F) {
+			super.setPos(x, y, z);
+		} else {
+			super.setPos(Mth.floor(x) + 0.5D, y, Mth.floor(z) + 0.5D);
+		}
+	}
 
 	@Override
 	public void readAdditionalSaveData(@NotNull CompoundTag tag) {
@@ -251,6 +250,17 @@ public class KindledEntity extends Monster implements Enemy {
 		return new KindledBodyControl(this);
 	}
 
+	private void turn(float f) {
+		float newRot = random.nextBoolean() ? f - 10 : f + 10; // This offset by 10 will get almost immediately corrected by the BodyRotationController, creating a cool bounce back effect
+		setYBodyRot(newRot);
+		this.entityData.set(DATA_ROTATION, newRot);
+	}
+
+	private void spin() {
+		float newRot = random.nextBoolean() ? yBodyRot - 90 : yBodyRot + 90;
+		turn(newRot);
+	}
+
 	class KindledBodyControl extends BodyRotationControl {
 		public KindledBodyControl(Mob pMob) {
 			super(pMob);
@@ -280,10 +290,10 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 
 		void hurt() {
-			if ((!hasAttackedDueToHit) && attackTime > 5) {
-				attackTime = 5;
-				hasAttackedDueToHit = true;
-			}
+//			if ((!hasAttackedDueToHit) && attackTime > 5) {
+//				attackTime = 5;
+//				hasAttackedDueToHit = true;
+//			}
 		}
 
 		@Override
@@ -338,7 +348,8 @@ public class KindledEntity extends Monster implements Enemy {
 			if (kindled.distanceTo(target) <= 400D) {
 				this.attackTime = 60 + random.nextInt(40);
 				if (isFacingTarget(target)) {
-					kindled.level.addFreshEntity(new ShulkerBullet(kindled.level, kindled, target, Direction.Axis.X));
+					kindled.level.addFreshEntity(new KindledBulletEntity(kindled.level, kindled, target, Direction.Axis.X));
+					kindled.playSound(SoundEvents.SHULKER_SHOOT, 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
 				} else {
 					kindled.spin();
 				}
@@ -346,17 +357,6 @@ public class KindledEntity extends Monster implements Enemy {
 				kindled.setTarget(null);
 			}
 		}
-	}
-
-	private void turn(float f) {
-		float newRot = random.nextBoolean() ? f - 10 : f + 10; // This offset by 10 will get almost immediately corrected by the BodyRotationController, creating a cool bounce back effect
-		setYBodyRot(newRot);
-		this.entityData.set(DATA_ROTATION, newRot);
-	}
-
-	private void spin() {
-		float newRot = random.nextBoolean() ? yBodyRot - 90 : yBodyRot + 90;
-		turn(newRot);
 	}
 
 	class PoofGoal extends BaseKindledGoal {
