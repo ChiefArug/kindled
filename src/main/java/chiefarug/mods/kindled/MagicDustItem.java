@@ -1,8 +1,10 @@
 package chiefarug.mods.kindled;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -35,19 +37,23 @@ public class MagicDustItem extends Item {
 		return super.useOn(context);
 	}
 
-	private void transformParticles(Level level, MutableBlockPos pos) {
+	public static void transformParticles(Level level, BlockPos pos) {
 		RandomSource rand = level.getRandom();
-		for (int i = 0; i < 50; i++) {
-			ParticleOffset offset = getRandomOffset(rand);
-			level.addParticle(ParticleTypes.CRIT, pos.getX() + 0.5D + offset.getX(), pos.getY() + 0.5D + offset.getY(), pos.getZ() + 0.5D + offset.getZ(), getRandomSpeed(rand), getRandomSpeed(rand), getRandomSpeed(rand));
+		if (level.isClientSide()) {
+			for (int i = 0; i < 50; i++) {
+				ParticleOffset offset = getRandomOffset(rand);
+				level.addParticle(ParticleTypes.CRIT, pos.getX() + 0.5D + offset.getX(), pos.getY() + 0.5D + offset.getY(), pos.getZ() + 0.5D + offset.getZ(), getRandomSpeed(rand), getRandomSpeed(rand), getRandomSpeed(rand));
+			}
+		} else if (level instanceof ServerLevel serverLevel){
+			serverLevel.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5D, pos.getY() , pos.getZ() + 0.5D, 50, 0.5, 0.9, 0.5, getRandomSpeed(rand));
 		}
 	}
 
-	private double getRandomSpeed(RandomSource random) {
+	private static double getRandomSpeed(RandomSource random) {
 		return (0.5D - random.nextFloat()) / 4;
 	}
 
-	private ParticleOffset getRandomOffset(RandomSource random) {
+	private static ParticleOffset getRandomOffset(RandomSource random) {
 		ParticleOffset po = new ParticleOffset();
 		switch (randomDir(random)) {
 			case DOWN -> po.setY(-0.5F);
@@ -61,7 +67,7 @@ public class MagicDustItem extends Item {
 		return po;
 	}
 
-	private Direction randomDir(RandomSource random) {
+	private static Direction randomDir(RandomSource random) {
 		return Direction.getRandom(random);
 	}
 

@@ -31,6 +31,7 @@ public class Registry {
 		}
 	};
 	public static final Item.Properties ITEM_PROPERTIES = new Item.Properties().tab(TAB);
+	public static final Material PUSHABLE_VEGETABLE = new Material.Builder(MaterialColor.PLANT).build();
 
 	public static final DeferredRegister<EntityType<?>> ENTITY_REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
 	public static final DeferredRegister<Block> BLOCK_REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
@@ -38,7 +39,7 @@ public class Registry {
 
 	public static final RegistryObject<EntityType<KindledEntity>> KINDLED_ENTITY = ENTITY_REGISTRY.register("kindled", () -> KindledEntity.ENTITY_TYPE);
 	public static final RegistryObject<EntityType<KindledBulletEntity>> KINDLED_BULLET_ENTITY = ENTITY_REGISTRY.register("kindled_bullet", () -> KindledBulletEntity.ENTITY_TYPE);
-	public static final RegistryObject<Block> MAGIC_PUMPKIN = BLOCK_REGISTRY.register("magic_pumpkin", () -> new Block(BlockBehaviour.Properties.of(Material.VEGETABLE, MaterialColor.COLOR_ORANGE).sound(SoundType.WOOD)));
+	public static final RegistryObject<Block> MAGIC_PUMPKIN = BLOCK_REGISTRY.register("magic_pumpkin", () -> new Block(BlockBehaviour.Properties.of(PUSHABLE_VEGETABLE, MaterialColor.COLOR_ORANGE).sound(SoundType.WOOD)));
 	public static final RegistryObject<Item> MAGIC_PUMPKIN_ITEM = ITEM_REGISTRY.register("magic_pumpkin", () -> new BlockItem(MAGIC_PUMPKIN.get(), ITEM_PROPERTIES));
 	public static final RegistryObject<Item> KINDLED_SPAWN_EGG = ITEM_REGISTRY.register("kindled_spawn_egg", () -> new ForgeSpawnEggItem(KINDLED_ENTITY, 0xE38A1D, 0x7E3D0E, ITEM_PROPERTIES));
 	public static final RegistryObject<Item> MAGIC_DUST_ITEM = ITEM_REGISTRY.register("magic_dust", () -> new MagicDustItem(ITEM_PROPERTIES));

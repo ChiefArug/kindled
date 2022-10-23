@@ -1,5 +1,6 @@
 package chiefarug.mods.kindled.entity;
 
+import chiefarug.mods.kindled.Kindled;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -44,7 +45,7 @@ import static chiefarug.mods.kindled.Kindled.LGGR;
 
 public class KindledEntity extends Monster implements Enemy {
 
-	public static final EntityType<KindledEntity> ENTITY_TYPE = EntityType.Builder.of(KindledEntity::new, MobCategory.MONSTER)
+	public static final EntityType<KindledEntity> ENTITY_TYPE = EntityType.Builder.of((EntityType.EntityFactory<KindledEntity>) KindledEntity::new, MobCategory.MONSTER)
 			.canSpawnFarFromPlayer()
 			.sized(1.0F, 1.0F)
 			.clientTrackingRange(10)
@@ -52,27 +53,6 @@ public class KindledEntity extends Monster implements Enemy {
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
 	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
-	private static final Map<Item, DyeColor> candles = new HashMap<>();
-
-	static {
-		candles.put(Items.CANDLE, null);
-		candles.put(Items.WHITE_CANDLE, DyeColor.WHITE);
-		candles.put(Items.ORANGE_CANDLE, DyeColor.ORANGE);
-		candles.put(Items.MAGENTA_CANDLE, DyeColor.MAGENTA);
-		candles.put(Items.LIGHT_BLUE_CANDLE, DyeColor.LIGHT_BLUE);
-		candles.put(Items.YELLOW_CANDLE, DyeColor.YELLOW);
-		candles.put(Items.LIME_CANDLE, DyeColor.LIME);
-		candles.put(Items.PINK_CANDLE, DyeColor.PINK);
-		candles.put(Items.GRAY_CANDLE, DyeColor.GRAY);
-		candles.put(Items.LIGHT_GRAY_CANDLE, DyeColor.LIGHT_GRAY);
-		candles.put(Items.CYAN_CANDLE, DyeColor.CYAN);
-		candles.put(Items.PURPLE_CANDLE, DyeColor.PURPLE);
-		candles.put(Items.BLUE_CANDLE, DyeColor.BLUE);
-		candles.put(Items.BROWN_CANDLE, DyeColor.BROWN);
-		candles.put(Items.GREEN_CANDLE, DyeColor.GREEN);
-		candles.put(Items.RED_CANDLE, DyeColor.RED);
-		candles.put(Items.BLACK_CANDLE, DyeColor.BLACK);
-	}
 
 	@Nullable
 	private DyeColor color;
@@ -80,6 +60,12 @@ public class KindledEntity extends Monster implements Enemy {
 
 	public KindledEntity(EntityType<? extends KindledEntity> type, Level level) {
 		super(type, level);
+	}
+
+	public KindledEntity(Level level, @Nullable DyeColor color, Direction facing) {
+		this(ENTITY_TYPE, level);
+		this.setColor(color);
+		this.turn(facing.toYRot());
 	}
 
 	public static AttributeSupplier createAttributes() {
@@ -177,8 +163,8 @@ public class KindledEntity extends Monster implements Enemy {
 		if (this.level.isClientSide()) return InteractionResult.PASS;
 		ItemStack heldItem = player.getItemInHand(hand);
 		Item item = heldItem.getItem();
-		if (candles.containsKey(item)) {
-			setColor(candles.get(item));
+		if (Kindled.candles.containsKey(item)) {
+			setColor(Kindled.candles.get(item));
 			//setYBodyRot(yBodyRot + 70);
 			spin();
 			return InteractionResult.CONSUME;
