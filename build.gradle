@@ -110,9 +110,11 @@ def modsTomlSpec = copySpec {
     }
 }
 
+// This works
 def buildPaths = [
-    "$rootDir/build/resources", // IDEA
-    "$rootDir/bin", // Eclipse
+    "$rootDir/build/main/resources", // IDEA
+    "$rootDir/out/production/resources", //IDEA the second
+    "$rootDir/bin", // Eclipse (No idea if this is correct)
 ]
 
 task replaceResources {
@@ -144,6 +146,8 @@ processResources {
 // Example configuration to allow publishing using the maven-publish plugin
 // This is the preferred method to reobfuscate your jar file
 jar.finalizedBy('reobfJar')
+// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
+// publish.dependsOn('reobfJar')
 
 publishing {
     publications {
