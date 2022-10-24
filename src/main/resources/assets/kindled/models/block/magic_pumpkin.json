@@ -1,26 +1,9 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/orientable_with_bottom",
   "textures": {
-    "end": "minecraft:block/pumpkin_top",
-    "side": "minecraft:block/pumpkin_side"
-  },
-  "display": {
-    "firstperson_righthand": {
-      "rotation": [
-        0,
-        135,
-        0
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        0.4,
-        0.4,
-        0.4
-      ]
-    }
+    "top": "minecraft:block/pumpkin_top",
+    "side": "minecraft:block/pumpkin_side",
+	"front": "kindled:block/magic_pumpkin_front",
+	"bottom": "kindled:block/magic_pumpkin_bottom"
   }
 }
