@@ -2,22 +2,20 @@ package chiefarug.mods.kindled.entity;
 
 import chiefarug.mods.kindled.Kindled;
 import chiefarug.mods.kindled.Registry;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -38,17 +36,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 import static chiefarug.mods.kindled.Kindled.LGGR;
 
@@ -61,8 +54,8 @@ public class KindledEntity extends Monster implements Enemy {
 			.build("kindled"); //TODO: check what the param passed to build does. Seems to just be datafixer stuff, but it is @NotNull
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
-	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
-	protected static final EntityDataAccessor<Integer> DATA_POOFEDNESS = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.INT);
+	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);//TODO: Save in nbt
+	protected static final EntityDataAccessor<Integer> DATA_POOFEDNESS = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.INT);//TODO: Swap to regular variable stored in nbt
 
 	@Nullable
 	private DyeColor color;
@@ -130,8 +123,6 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	public void poof() {
-		this.discard();
-
 		ItemStack itemToDrop = new ItemStack(Registry.MAGIC_DUST_ITEM.get());
 		itemToDrop.setCount(random.nextInt(3));
 		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
@@ -141,6 +132,9 @@ public class KindledEntity extends Monster implements Enemy {
 		if (level instanceof ServerLevel sl) {
 			sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 50, 0.5D, 0.5D, 0.5D, 0.1D);
 		}
+		this.playSound(Registry.KINDLED_POOF_SOUND.get());
+
+		this.discard();
 	}
 
 	@Nullable
@@ -253,6 +247,11 @@ public class KindledEntity extends Monster implements Enemy {
 		super.addAdditionalSaveData(tag);
 		DyeColor color = getColor();
 		tag.putByte("Color", color == null ? 16 : (byte) getColor().getId());
+	}
+
+	@Override
+	protected SoundEvent getHurtSound(@NotNull DamageSource pDamageSource) {
+		return Registry.KINDLED_HURT_SOUND.get();
 	}
 
 	@Override
@@ -372,7 +371,7 @@ public class KindledEntity extends Monster implements Enemy {
 				this.attackTime = 60 + random.nextInt(40);
 				if (isFacingTarget(target)) {
 					kindled.level.addFreshEntity(new KindledBulletEntity(kindled.level, kindled, target, Direction.Axis.X));
-					kindled.playSound(SoundEvents.SHULKER_SHOOT, 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
+					kindled.playSound(Registry.KINDLED_SHOOT_SOUND.get(), 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
 				} else {
 					kindled.spin();
 				}

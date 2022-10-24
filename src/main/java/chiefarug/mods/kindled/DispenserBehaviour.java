@@ -1,6 +1,5 @@
 package chiefarug.mods.kindled;
 
-import chiefarug.mods.kindled.entity.KindledBulletEntity;
 import chiefarug.mods.kindled.entity.KindledEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
@@ -11,8 +10,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
-
-import javax.tools.Diagnostic;
 
 public class DispenserBehaviour {
 

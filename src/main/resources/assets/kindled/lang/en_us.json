@@ -1,3 +1,11 @@
 {
-  "entity.kindled.kindled": "Kindled"
+  "entity.kindled.kindled": "Kindled",
+  "entity.kindled.kindled_bullet": "Kindled Bullet",
+  "block.kindled.magic_pumpkin": "Magic Pumpkin",
+  "item.kindled.magic_dust": "Magic Dust",
+  "item.kindled.kindled_spawn_egg": "Kindled Spawn Egg",
+  "kindled.subtitles.kindled_hurt": "Kindled hurts",
+  "kindled.subtitles.kindled_shoot": "Kindled shoots",
+  "kindled.subtitles.kindled_poof": "Kindled poofs",
+  "itemGroup.kindled": "Kindled"
 }

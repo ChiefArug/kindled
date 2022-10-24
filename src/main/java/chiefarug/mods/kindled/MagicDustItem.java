@@ -2,7 +2,6 @@ package chiefarug.mods.kindled;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-import static chiefarug.mods.kindled.Kindled.getRandomOffset;
 import static chiefarug.mods.kindled.Kindled.getRandomSpeed;
 
 public class MagicDustItem extends Item {

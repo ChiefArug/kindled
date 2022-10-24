@@ -2,11 +2,9 @@ package chiefarug.mods.kindled;
 
 import chiefarug.mods.kindled.entity.KindledEntity;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;

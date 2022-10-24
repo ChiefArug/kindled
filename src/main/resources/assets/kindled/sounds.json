@@ -1,0 +1,30 @@
+{
+  "kindled_hurt": {
+    "sounds": [
+      {
+        "name": "kindled:kindled_hurt_01"
+      },
+      {
+        "name": "kindled:kindled_hurt_02"
+      }
+    ],
+    "subtitle": "kindled.subtitles.kindled_hurt"
+  },
+  "kindled_shoot": {
+    "sounds": [
+      {
+        "name": "kindled:kindled_shoot_01",
+        "volume": 0.1
+      }
+    ],
+    "subtitle": "kindled.subtitles.kindled_shoot"
+  },
+  "kindled_poof": {
+    "sounds": [
+      {
+        "name": "kindled:kindled_poofer_01"
+      }
+    ],
+    "subtitle": "kindled.subtitles.kindled_poof"
+  }
+}
