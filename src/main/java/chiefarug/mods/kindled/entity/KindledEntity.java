@@ -55,7 +55,7 @@ public class KindledEntity extends Monster implements Enemy {
 			.canSpawnFarFromPlayer()
 			.sized(1.0F, 1.0F)
 			.clientTrackingRange(10)
-			.build("kindled"); //TODO: check what the param passed to build does. Seems to just be datafixer stuff, but it is @NotNull
+			.build("kindled");
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
 	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
@@ -210,20 +210,20 @@ public class KindledEntity extends Monster implements Enemy {
 		return super.hurt(source, pAmount);
 	}
 
-	@Override
-	@NotNull //DEBUG
-	protected InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
-		if (this.level.isClientSide()) return InteractionResult.PASS;
-		ItemStack heldItem = player.getItemInHand(hand);
-		Item item = heldItem.getItem();
-		if (Kindled.candles.containsKey(item)) {
-			setColor(Kindled.candles.get(item));
-			//setYBodyRot(yBodyRot + 70);
-			spin();
-			return InteractionResult.CONSUME;
-		}
-		return InteractionResult.PASS;
-	}
+//	@Override
+//	@NotNull //DEBUG
+//	protected InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
+//		if (this.level.isClientSide()) return InteractionResult.PASS;
+//		ItemStack heldItem = player.getItemInHand(hand);
+//		Item item = heldItem.getItem();
+//		if (Kindled.candles.containsKey(item)) {
+//			setColor(Kindled.candles.get(item));
+//			//setYBodyRot(yBodyRot + 70);
+//			spin();
+//			return InteractionResult.CONSUME;
+//		}
+//		return InteractionResult.PASS;
+//	}
 
 	@Override
 	public @NotNull ItemStack getItemInHand(@NotNull InteractionHand pHand) {
