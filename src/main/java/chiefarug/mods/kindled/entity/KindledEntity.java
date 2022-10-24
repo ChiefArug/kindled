@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -37,6 +38,9 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -54,8 +58,8 @@ public class KindledEntity extends Monster implements Enemy {
 			.build("kindled"); //TODO: check what the param passed to build does. Seems to just be datafixer stuff, but it is @NotNull
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
-	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);//TODO: Save in nbt
-	protected static final EntityDataAccessor<Integer> DATA_POOFEDNESS = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.INT);//TODO: Swap to regular variable stored in nbt
+	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
+	private int poofedness;
 
 	@Nullable
 	private DyeColor color;
@@ -98,11 +102,11 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	public int getCurrentPoofedness() {
-		return this.entityData.get(DATA_POOFEDNESS);
+		return poofedness;
 	}
 
 	public void setCurrentPoofedness(int i) {
-		this.entityData.set(DATA_POOFEDNESS, i);
+		poofedness = i;
 	}
 
 	public void increaseCurrentPoofedness(int i) {
@@ -123,18 +127,22 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	public void poof() {
-		ItemStack itemToDrop = new ItemStack(Registry.MAGIC_DUST_ITEM.get());
-		itemToDrop.setCount(random.nextInt(3));
-		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
-		droppedItem.setDefaultPickUpDelay();
-		level.addFreshEntity(droppedItem);
-
+		dropPoofLoot();
 		if (level instanceof ServerLevel sl) {
 			sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 50, 0.5D, 0.5D, 0.5D, 0.1D);
 		}
 		this.playSound(Registry.KINDLED_POOF_SOUND.get());
 
 		this.discard();
+	}
+
+	private void dropPoofLoot() {
+		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
+		ResourceLocation resourcelocation = new ResourceLocation(Kindled.MODID, "entity/kindled/poof");
+		LootTable loottable = this.level.getServer().getLootTables().get(resourcelocation);
+		LootContext.Builder lootContext$builder = this.createLootContext(false, new DamageSource("kindled.poofed"));
+		LootContext ctx = lootContext$builder.create(LootContextParamSets.ENTITY);
+		loottable.getRandomItems(ctx).forEach(this::spawnAtLocation);
 	}
 
 	@Nullable
@@ -161,7 +169,6 @@ public class KindledEntity extends Monster implements Enemy {
 		super.defineSynchedData();
 		this.entityData.define(DATA_COLOR_ID, (byte) 16);
 		this.entityData.define(DATA_ROTATION, this.yBodyRot);
-		this.entityData.define(DATA_POOFEDNESS, 0);
 	}
 
 	@Override
@@ -240,6 +247,12 @@ public class KindledEntity extends Monster implements Enemy {
 		} else {
 			setColor(null);
 		}
+		if (tag.contains("Facing")) {
+			turn(tag.getFloat("Facing"));
+		}
+		if (tag.contains("Poofedness")) {
+			setCurrentPoofedness(tag.getInt("Poofedness"));
+		}
 	}
 
 	@Override
@@ -247,6 +260,8 @@ public class KindledEntity extends Monster implements Enemy {
 		super.addAdditionalSaveData(tag);
 		DyeColor color = getColor();
 		tag.putByte("Color", color == null ? 16 : (byte) getColor().getId());
+		tag.putFloat("Facing", entityData.get(DATA_ROTATION));
+		tag.putInt("Poofedness", getCurrentPoofedness());
 	}
 
 	@Override

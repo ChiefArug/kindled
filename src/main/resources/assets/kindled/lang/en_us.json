@@ -7,5 +7,6 @@
   "kindled.subtitles.kindled_hurt": "Kindled hurts",
   "kindled.subtitles.kindled_shoot": "Kindled shoots",
   "kindled.subtitles.kindled_poof": "Kindled poofs",
-  "itemGroup.kindled": "Kindled"
+  "itemGroup.kindled": "Kindled",
+  "death.attack.kindled.poof": "%1$s poofed into dust"
 }
