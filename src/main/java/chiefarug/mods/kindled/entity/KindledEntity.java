@@ -1,17 +1,23 @@
 package chiefarug.mods.kindled.entity;
 
 import chiefarug.mods.kindled.Kindled;
+import chiefarug.mods.kindled.Registry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -23,7 +29,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -32,6 +40,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -53,10 +62,10 @@ public class KindledEntity extends Monster implements Enemy {
 	protected static final EntityDataAccessor<Byte> DATA_COLOR_ID = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.BYTE);
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
 	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
+	protected static final EntityDataAccessor<Integer> DATA_POOFEDNESS = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.INT);
 
 	@Nullable
 	private DyeColor color;
-	private int poofTimer;
 
 	public KindledEntity(EntityType<? extends KindledEntity> type, Level level) {
 		super(type, level);
@@ -80,7 +89,8 @@ public class KindledEntity extends Monster implements Enemy {
 	protected void registerGoals() {
 		this.goalSelector.addGoal(1, new KindledAttackGoal());
 
-		this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
+		this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+		this.targetSelector.addGoal(1, new HurtByTargetGoal(this, this.getClass()).setAlertOthers());
 	}
 
 	@Override
@@ -91,6 +101,45 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 		if (DATA_ROTATION.equals(key) && level.isClientSide()) {
 			this.yBodyRot = this.entityData.get(DATA_ROTATION);
+		}
+	}
+
+	public int getCurrentPoofedness() {
+		return this.entityData.get(DATA_POOFEDNESS);
+	}
+
+	public void setCurrentPoofedness(int i) {
+		this.entityData.set(DATA_POOFEDNESS, i);
+	}
+
+	public void increaseCurrentPoofedness(int i) {
+		setCurrentPoofedness(getCurrentPoofedness() + i);
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+		if (!this.isOnGround()) {
+			increaseCurrentPoofedness(2);
+		} else if (getCurrentPoofedness() > 0){
+			increaseCurrentPoofedness(-1);
+		}
+		if (this.getCurrentPoofedness() > 160) {
+			poof();
+		}
+	}
+
+	public void poof() {
+		this.discard();
+
+		ItemStack itemToDrop = new ItemStack(Registry.MAGIC_DUST_ITEM.get());
+		itemToDrop.setCount(random.nextInt(3));
+		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
+		droppedItem.setDefaultPickUpDelay();
+		level.addFreshEntity(droppedItem);
+
+		if (level instanceof ServerLevel sl) {
+			sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 50, 0.5D, 0.5D, 0.5D, 0.1D);
 		}
 	}
 
@@ -118,6 +167,7 @@ public class KindledEntity extends Monster implements Enemy {
 		super.defineSynchedData();
 		this.entityData.define(DATA_COLOR_ID, (byte) 16);
 		this.entityData.define(DATA_ROTATION, this.yBodyRot);
+		this.entityData.define(DATA_POOFEDNESS, 0);
 	}
 
 	@Override
@@ -142,16 +192,18 @@ public class KindledEntity extends Monster implements Enemy {
 					turn(0);
 				}
 			}
-			// for all running attack goals (there should really only be one), run the hurt method, which sets the attack timer to 5 ticks, but only for the first times
-			goalSelector.getRunningGoals().map(goal -> goal.getGoal() instanceof KindledAttackGoal attackGoal ? attackGoal : null).filter(Objects::nonNull).forEach(KindledAttackGoal::hurt);
-
 		}
 
 		if (source.isProjectile()) {
 			Entity entity1 = source.getDirectEntity();
-			if (entity1 != null && entity1.getType() == EntityType.SHULKER_BULLET) {
-				poofTimer += 5;
-				return false; // Otherwise, they just kill themselves
+			if (entity1 != null) {
+				// Increase poof timer if they get hit by a floating bullet, and don't hurt if it's their own sort of bullet.
+				if (entity1.getType() == EntityType.SHULKER_BULLET) {
+					increaseCurrentPoofedness(random.nextInt(10));
+				} else if (entity1.getType() == Registry.KINDLED_BULLET_ENTITY.get()) {
+					increaseCurrentPoofedness(random.nextInt(5));
+					return entity1.getType() == Registry.KINDLED_BULLET_ENTITY.get(); // Otherwise, they just kill themselves
+				}
 			}
 		}
 		return super.hurt(source, pAmount);
@@ -201,10 +253,6 @@ public class KindledEntity extends Monster implements Enemy {
 		super.addAdditionalSaveData(tag);
 		DyeColor color = getColor();
 		tag.putByte("Color", color == null ? 16 : (byte) getColor().getId());
-	}
-
-	public boolean isPoofReady() {
-		return poofTimer > 60;
 	}
 
 	@Override
@@ -269,28 +317,22 @@ public class KindledEntity extends Monster implements Enemy {
 
 	class KindledAttackGoal extends BaseKindledGoal {
 		private int attackTime;
-		private boolean hasAttackedDueToHit;
 
 		public KindledAttackGoal() {
 			this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		void hurt() {
-//			if ((!hasAttackedDueToHit) && attackTime > 5) {
-//				attackTime = 5;
-//				hasAttackedDueToHit = true;
-//			}
 		}
 
 		@Override
 		public boolean canUse() {
 			LivingEntity target = kindled.getTarget();
 			if (target != null) {
-				if (kindled.getLevel().getDifficulty() != Difficulty.PEACEFUL) {
-					hasAttackedDueToHit = false;
-					return true;
+				if (!target.isAlive()) {
+					kindled.setTarget(null);
+				} else {
+					return kindled.getLevel().getDifficulty() != Difficulty.PEACEFUL;
 				}
 			}
+
 			return false;
 		}
 
@@ -321,11 +363,6 @@ public class KindledEntity extends Monster implements Enemy {
 		}
 
 		@Override
-		public void stop() {
-			hasAttackedDueToHit = false;
-		}
-
-		@Override
 		public void tick() {
 			if (kindled.level.getDifficulty() == Difficulty.PEACEFUL || attackTime-- >= 0) return;
 
@@ -342,15 +379,6 @@ public class KindledEntity extends Monster implements Enemy {
 			} else {
 				kindled.setTarget(null);
 			}
-		}
-	}
-
-	class PoofGoal extends BaseKindledGoal {
-		private int poofTimer;
-
-		@Override
-		public boolean canUse() {
-			return false;
 		}
 	}
 }
