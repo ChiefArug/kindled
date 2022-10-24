@@ -1,5 +1,6 @@
 package chiefarug.mods.kindled;
 
+import chiefarug.mods.kindled.block.MagicPumpkinBlock;
 import chiefarug.mods.kindled.entity.KindledEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
@@ -27,7 +28,7 @@ public class DispenserBehaviour {
 		if (state.getBlock() == Registry.MAGIC_PUMPKIN.get()) {
 			level.destroyBlock(pos, false);
 
-			KindledEntity kindled = new KindledEntity(level, Kindled.candles.get(stack.getItem()), dir);
+			KindledEntity kindled = new KindledEntity(level, Kindled.candles.get(stack.getItem()), state.getValue(MagicPumpkinBlock.FACING));
 			kindled.setPos(pos.getX(), pos.getY(), pos.getZ());
 			level.addFreshEntity(kindled);
 
@@ -37,11 +38,13 @@ public class DispenserBehaviour {
 	}
 
 	public static @NotNull ItemStack dispenseMagicDust(BlockSource source, ItemStack stack) {
-		BlockPos pos = source.getPos().relative(source.getBlockState().getValue(DispenserBlock.FACING));
+		Direction dispenserFacing = source.getBlockState().getValue(DispenserBlock.FACING);
+		BlockPos pos = source.getPos().relative(dispenserFacing);
 		Level level = source.getLevel();
 		BlockState state = level.getBlockState(pos);
+
 		if (state.getBlock() == Blocks.PUMPKIN) {
-			level.setBlock(pos, Registry.MAGIC_PUMPKIN.get().defaultBlockState(), 3);
+			level.setBlock(pos, Registry.MAGIC_PUMPKIN.get().defaultBlockState().setValue(MagicPumpkinBlock.FACING, dispenserFacing), 3);
 			MagicDustItem.transformParticles(source.getLevel(), pos);
 			stack.shrink(1);
 		}
