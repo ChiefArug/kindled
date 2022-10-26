@@ -31,6 +31,7 @@ public class KindledBulletRenderer extends ShulkerBulletRenderer {
 	@Override
 	public void render(ShulkerBullet pEntity, float pEntityYaw, float pPartialTicks, PoseStack pMatrixStack, MultiBufferSource pBuffer, int pPackedLight) {
 		pMatrixStack.pushPose();
+		//noinspection deprecation
 		float f = Mth.rotlerp(pEntity.yRotO, pEntity.getYRot(), pPartialTicks);
 		float f1 = Mth.lerp(pPartialTicks, pEntity.xRotO, pEntity.getXRot());
 		float f2 = (float) pEntity.tickCount + pPartialTicks;
@@ -43,8 +44,8 @@ public class KindledBulletRenderer extends ShulkerBulletRenderer {
 		VertexConsumer vertexconsumer = pBuffer.getBuffer(this.model.renderType(getTextureLocation(pEntity)));
 		this.model.renderToBuffer(pMatrixStack, vertexconsumer, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 		pMatrixStack.scale(1.5F, 1.5F, 1.5F);
-		VertexConsumer vertexconsumer1 = pBuffer.getBuffer(RENDER_TYPE);
-		this.model.renderToBuffer(pMatrixStack, vertexconsumer1, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 0.15F);
+		VertexConsumer vertexConsumer1 = pBuffer.getBuffer(RENDER_TYPE);
+		this.model.renderToBuffer(pMatrixStack, vertexConsumer1, pPackedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 0.15F);
 		pMatrixStack.popPose();
 		super.render(pEntity, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight);
 	}

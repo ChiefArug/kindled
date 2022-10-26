@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static chiefarug.mods.kindled.Kindled.MODID;
 
-public class Registry {
+public class KindledRegistry {
 
 	public static final CreativeModeTab TAB = new CreativeModeTab(MODID) {
 		@Override
@@ -36,10 +36,10 @@ public class Registry {
 	public static final Item.Properties ITEM_PROPERTIES = new Item.Properties().tab(TAB);
 	public static final Material PUSHABLE_VEGETABLE = new Material.Builder(MaterialColor.PLANT).build();
 
-	public static final DeferredRegister<EntityType<?>> ENTITY_REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
-	public static final DeferredRegister<Block> BLOCK_REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-	public static final DeferredRegister<Item> ITEM_REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-	public static final DeferredRegister<SoundEvent> SOUND_REGISTRY = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
+	private static final DeferredRegister<EntityType<?>> ENTITY_REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
+	private static final DeferredRegister<Block> BLOCK_REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+	private static final DeferredRegister<Item> ITEM_REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+	private static final DeferredRegister<SoundEvent> SOUND_REGISTRY = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MODID);
 
 	public static final RegistryObject<EntityType<KindledEntity>> KINDLED_ENTITY = ENTITY_REGISTRY.register("kindled", () -> KindledEntity.ENTITY_TYPE);
 	public static final RegistryObject<EntityType<KindledBulletEntity>> KINDLED_BULLET_ENTITY = ENTITY_REGISTRY.register("kindled_bullet", () -> KindledBulletEntity.ENTITY_TYPE);

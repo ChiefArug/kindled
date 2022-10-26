@@ -1,21 +1,17 @@
 package chiefarug.mods.kindled.entity;
 
-import chiefarug.mods.kindled.Kindled;
-import chiefarug.mods.kindled.Registry;
+import chiefarug.mods.kindled.KindledRegistry;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -35,13 +31,8 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -132,19 +123,19 @@ public class KindledEntity extends Monster implements Enemy {
 		if (level instanceof ServerLevel sl) {
 			sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 50, 0.5D, 0.5D, 0.5D, 0.1D);
 		}
-		this.playSound(Registry.KINDLED_POOF_SOUND.get());
+		this.playSound(KindledRegistry.KINDLED_POOF_SOUND.get());
 
 		this.discard();
 	}
 
 	private void dropPoofLoot() { //FIXME: Loot table broken
 //		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
-//		ResourceLocation resourcelocation = new ResourceLocation(Kindled.MODID, "entities/kindled/poof");
-//		LootTable loottable = this.level.getServer().getLootTables().get(resourcelocation);
+//		ResourceLocation resourceLocation = new ResourceLocation(Kindled.MODID, "entities/kindled/poof");
+//		LootTable lootTable = this.level.getServer().getLootTables().get(resourceLocation);
 //		LootContext.Builder lootContext$builder = this.createLootContext(false, new DamageSource("kindled.poofed"));
 //		LootContext ctx = lootContext$builder.create(LootContextParamSets.ENTITY);
-//		loottable.getRandomItems(ctx).forEach(this::spawnAtLocation);
-		ItemStack itemToDrop = new ItemStack(Registry.MAGIC_DUST_ITEM.get());
+//		lootTable.getRandomItems(ctx).forEach(this::spawnAtLocation);
+		ItemStack itemToDrop = new ItemStack(KindledRegistry.MAGIC_DUST_ITEM.get());
 		itemToDrop.setCount(this.random.nextInt(3));
 		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
 		droppedItem.setDefaultPickUpDelay();
@@ -207,9 +198,9 @@ public class KindledEntity extends Monster implements Enemy {
 				// Increase poof timer if they get hit by a floating bullet, and don't hurt if it's their own sort of bullet.
 				if (entity1.getType() == EntityType.SHULKER_BULLET) {
 					increaseCurrentPoofedness(random.nextInt(10));
-				} else if (entity1.getType() == Registry.KINDLED_BULLET_ENTITY.get()) {
+				} else if (entity1.getType() == KindledRegistry.KINDLED_BULLET_ENTITY.get()) {
 					increaseCurrentPoofedness(random.nextInt(5));
-					return entity1.getType() == Registry.KINDLED_BULLET_ENTITY.get(); // Otherwise, they just kill themselves
+					return entity1.getType() == KindledRegistry.KINDLED_BULLET_ENTITY.get(); // Otherwise, they just kill themselves
 				}
 			}
 		}
@@ -272,7 +263,7 @@ public class KindledEntity extends Monster implements Enemy {
 
 	@Override
 	protected SoundEvent getHurtSound(@NotNull DamageSource pDamageSource) {
-		return Registry.KINDLED_HURT_SOUND.get();
+		return KindledRegistry.KINDLED_HURT_SOUND.get();
 	}
 
 	@Override
@@ -366,6 +357,7 @@ public class KindledEntity extends Monster implements Enemy {
 			return true;
 		}
 
+		@SuppressWarnings("SameReturnValue")
 		private boolean wtf(Direction dir) {
 			LGGR.error("How on earth did this happen. Got direction " + dir + " from Direction#fromYRot, should only be north, south, east or west. (This is to make the compiler happy, if anyone actually sees this error message, sorry. I suggest your pray to the bit flip gods that this never happens again)");
 			return false;
@@ -392,7 +384,7 @@ public class KindledEntity extends Monster implements Enemy {
 				this.attackTime = 60 + random.nextInt(40);
 				if (isFacingTarget(target)) {
 					kindled.level.addFreshEntity(new KindledBulletEntity(kindled.level, kindled, target, Direction.Axis.X));
-					kindled.playSound(Registry.KINDLED_SHOOT_SOUND.get(), 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
+					kindled.playSound(KindledRegistry.KINDLED_SHOOT_SOUND.get(), 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
 				} else {
 					kindled.spin();
 				}
