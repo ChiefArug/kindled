@@ -41,6 +41,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -136,13 +137,18 @@ public class KindledEntity extends Monster implements Enemy {
 		this.discard();
 	}
 
-	private void dropPoofLoot() {
-		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
-		ResourceLocation resourcelocation = new ResourceLocation(Kindled.MODID, "entity/kindled/poof");
-		LootTable loottable = this.level.getServer().getLootTables().get(resourcelocation);
-		LootContext.Builder lootContext$builder = this.createLootContext(false, new DamageSource("kindled.poofed"));
-		LootContext ctx = lootContext$builder.create(LootContextParamSets.ENTITY);
-		loottable.getRandomItems(ctx).forEach(this::spawnAtLocation);
+	private void dropPoofLoot() { //FIXME: Loot table broken
+//		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
+//		ResourceLocation resourcelocation = new ResourceLocation(Kindled.MODID, "entities/kindled/poof");
+//		LootTable loottable = this.level.getServer().getLootTables().get(resourcelocation);
+//		LootContext.Builder lootContext$builder = this.createLootContext(false, new DamageSource("kindled.poofed"));
+//		LootContext ctx = lootContext$builder.create(LootContextParamSets.ENTITY);
+//		loottable.getRandomItems(ctx).forEach(this::spawnAtLocation);
+		ItemStack itemToDrop = new ItemStack(Registry.MAGIC_DUST_ITEM.get());
+		itemToDrop.setCount(this.random.nextInt(3));
+		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
+		droppedItem.setDefaultPickUpDelay();
+		this.level.addFreshEntity(droppedItem);
 	}
 
 	@Nullable
