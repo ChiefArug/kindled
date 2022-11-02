@@ -1,0 +1,30 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:deepslate_bricks"
+    },
+    "title": {
+      "translate": "advancements.kindled.found_structure"
+    },
+    "description": {
+      "translate": "advancements.kindled.found_structure.description"
+    }
+  },
+  "parent": "kindled:kindled/root",
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:location_check",
+            "predicate": {
+              "structure": "kindled:tower"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["requirement"]]
+}

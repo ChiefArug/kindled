@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "item": "kindled:kindled_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.kindled.kill_kindled"
+    },
+    "description": {
+      "translate": "advancements.kindled.kill_kindled.description"
+    }
+  },
+  "parent": "kindled:kindled/found_structure",
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "kindled:kindled"
+        }
+      }
+    }
+  },
+  "requirements": [
+    [
+      "requirement"
+    ]
+  ]
+}

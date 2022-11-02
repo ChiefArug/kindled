@@ -1,11 +1,14 @@
 package chiefarug.mods.kindled.block;
 
 import chiefarug.mods.kindled.InWorldTransforms;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -32,10 +35,14 @@ public class MagicPumpkinBlock extends HorizontalDirectionalBlock {
 	@SuppressWarnings("deprecation")
 	@Override
 	public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
+		ItemStack stack = player.getItemInHand(hand);
+		if (player instanceof ServerPlayer) // Make sure advancements try trigger
+			CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, stack);
+
 		return InWorldTransforms.magicPumpkinToKindled(
 				level,
 				pos,
-				player.getItemInHand(hand),
+				stack,
 				!player.getAbilities().instabuild
 		).orElseGet(() -> super.use(state, level, pos, player, hand, hitResult));
 	}

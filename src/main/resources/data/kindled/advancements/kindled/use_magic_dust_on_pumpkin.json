@@ -1,0 +1,34 @@
+{
+  "display": {
+    "icon": {
+      "item": "kindled:magic_pumpkin"
+    },
+    "title": {
+      "translate": "advancements.kindled.use_magic_dust_on_pumpkin"
+    },
+    "description": {
+      "translate": "advancements.kindled.use_magic_dust_on_pumpkin.description"
+    }
+  },
+  "parent": "kindled:kindled/find_magic_dust",
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:item_used_on_block",
+      "conditions": {
+        "item": {
+          "items": [
+            "kindled:magic_dust"
+          ]
+        },
+        "location": {
+          "block": {
+            "blocks": [
+              "minecraft:pumpkin"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "requirements": [["requirement"]]
+}

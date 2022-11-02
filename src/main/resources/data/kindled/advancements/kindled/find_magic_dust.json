@@ -1,0 +1,29 @@
+{
+  "display": {
+    "icon": {
+      "item": "kindled:magic_dust"
+    },
+    "title": {
+      "translate": "advancements.kindled.find_magic_dust"
+    },
+    "description": {
+      "translate": "advancements.kindled.find_magic_dust.description"
+    }
+  },
+  "parent": "kindled:kindled/found_structure",
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "kindled:magic_dust"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["requirement"]]
+}

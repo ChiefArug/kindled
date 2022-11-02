@@ -8,5 +8,22 @@
   "kindled.subtitles.kindled_shoot": "Kindled shoots",
   "kindled.subtitles.kindled_poof": "Kindled poofs",
   "itemGroup.kindled": "Kindled",
-  "death.attack.kindled.poof": "%1$s poofed into dust"
+  "death.attack.kindled.poof": "%1$s poofed into dust",
+
+  "advancements.kindled.root": "Kindled",
+  "advancements.kindled.root.description": "Mixing Pumpkins, magic dust and pumpkins? Sounds fun!",
+  "advancements.kindled.found_structure": "Haunting Developments",
+  "advancements.kindled.found_structure.description": "Stumble upon a Kindled Haunt",
+  "advancements.kindled.kill_kindled": "Killndled",
+  "advancements.kindled.kill_kindled.description": "Kill a Kindled",
+  "advancements.kindled.find_magic_dust": "Magic!",
+  "advancements.kindled.find_magic_dust.description": "Obtain Magic Dust",
+  "advancements.kindled.use_magic_dust_on_pumpkin": "Not quite a Carriage",
+  "advancements.kindled.use_magic_dust_on_pumpkin.description": "Use Magic Dust to transform a Pumpkin",
+  "advancements.kindled.magic_pumpkin_to_kindled": "Its ALIVE!",
+  "advancements.kindled.magic_pumpkin_to_kindled.description": "Ignite a new Kindled into being",
+  "advancements.kindled.kill_colored_kindled": "Unfamiliar Colorings",
+  "advancements.kindled.kill_colored_kindled.description": "Kill a colored Kindled",
+  "advancements.kindled.kill_all_kindled": "Snuff 'em",
+  "advancements.kindled.kill_all_kindled.description": "Kill all 17 colors of Kindled"
 }

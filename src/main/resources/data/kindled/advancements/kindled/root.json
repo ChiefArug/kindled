@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:carved_pumpkin"
+    },
+    "title": {
+      "translate": "advancements.kindled.root"
+    },
+    "description": {
+      "translate": "advancements.kindled.root.description"
+    },
+    "background": "minecraft:textures/block/mud_bricks.png",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:slept_in_bed"
+    }
+  },
+  "requirements": [["requirement"]]
+}

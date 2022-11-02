@@ -1,0 +1,33 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:candle"
+    },
+    "title": {
+      "translate": "advancements.kindled.magic_pumpkin_to_kindled"
+    },
+    "description": {
+      "translate": "advancements.kindled.magic_pumpkin_to_kindled.description"
+    },
+    "frame": "goal"
+  },
+  "parent": "kindled:kindled/use_magic_dust_on_pumpkin",
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:item_used_on_block",
+      "conditions": {
+        "item": {
+          "tag": "minecraft:candles"
+        },
+        "location": {
+          "block": {
+            "blocks": [
+              "kindled:magic_pumpkin"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "requirements": [["requirement"]]
+}
