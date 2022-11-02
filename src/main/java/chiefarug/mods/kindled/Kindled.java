@@ -42,7 +42,7 @@ public class Kindled {
 	/*
 	//TODO: structure
 	make sure all stair based jigsaws face the correct way
-	/place jigsaw kindled:tower/start down 7 ~64 ~ ~
+	/place jigsaw kindled:haunt/start down 7 ~64 ~ ~
 	F9FFFE,WHITE
 	F9801D,ORANGE
 	C74EBD,MAGENTA

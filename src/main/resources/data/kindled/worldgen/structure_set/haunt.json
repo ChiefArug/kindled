@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "kindled:haunt",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 12533265, // SuperMonkeySalt
+    "spacing": 12,
+    "separation": 8
+  }
+}

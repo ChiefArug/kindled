@@ -19,7 +19,7 @@
           {
             "condition": "minecraft:location_check",
             "predicate": {
-              "structure": "kindled:tower"
+              "structure": "kindled:haunt"
             }
           }
         ]
