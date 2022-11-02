@@ -20,7 +20,7 @@ public class InWorldTransforms {
 		BlockState state = level.getBlockState(pos);
 
 		if (state.getBlock() == Blocks.PUMPKIN && item.getItem() == KindledRegistry.MAGIC_DUST_ITEM.get()) {
-			level.setBlock(pos, KindledRegistry.MAGIC_PUMPKIN.get().defaultBlockState().setValue(MagicPumpkinBlock.FACING, facing), 3);
+			level.setBlock(pos, KindledRegistry.MAGIC_PUMPKIN.get().defaultBlockState().setValue(MagicPumpkinBlock.FACING, horizontalize(facing)), 3);
 
 			if (consumeItem)
 				item.shrink(1);
@@ -56,5 +56,13 @@ public class InWorldTransforms {
 
 	private static void transformParticles(ServerLevel level, BlockPos pos) {
 		level.sendParticles(ParticleTypes.CRIT, pos.getX() + 0.5D, pos.getY() , pos.getZ() + 0.5D, 50, 0.5, 0.9, 0.5, 0.2);
+	}
+
+	@SuppressWarnings("SpellCheckingInspection") //horizontalize is a word!
+	private static Direction horizontalize(Direction toTransform) {
+		return switch (toTransform) {
+			case UP, DOWN -> Direction.NORTH;
+			default -> toTransform;
+		};
 	}
 }
