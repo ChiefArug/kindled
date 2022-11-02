@@ -13,13 +13,13 @@ public class MagicDustItem extends Item {
 	@Override
 	public @NotNull InteractionResult useOn(@NotNull UseOnContext context) {
 		// Null check here cause its @Nullable
-		boolean consumeItem = context.getPlayer() == null || context.getPlayer().getAbilities().instabuild;
+		boolean keepItem = context.getPlayer() == null || context.getPlayer().getAbilities().instabuild;
 		return InWorldTransforms.pumpkinToMagicPumpkin(
 				context.getLevel(),
 				context.getClickedPos(),
 				context.getItemInHand(),
 				context.getClickedFace(),
-				consumeItem
+				!keepItem
 		).orElseGet(() -> super.useOn(context));
 	}
 }

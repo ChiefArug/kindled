@@ -36,7 +36,7 @@ public class MagicPumpkinBlock extends HorizontalDirectionalBlock {
 				level,
 				pos,
 				player.getItemInHand(hand),
-				player.getAbilities().instabuild
+				!player.getAbilities().instabuild
 		).orElseGet(() -> super.use(state, level, pos, player, hand, hitResult));
 	}
 }
