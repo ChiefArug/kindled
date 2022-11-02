@@ -16,7 +16,8 @@ public class DispenserBehaviour {
 		InWorldTransforms.magicPumpkinToKindled(
 				source.getLevel(),
 				source.getPos(),
-				stack
+				stack,
+				true
 		);
 		return stack;
 	}
@@ -26,7 +27,8 @@ public class DispenserBehaviour {
 				source.getLevel(),
 				source.getPos(),
 				stack,
-				source.getBlockState().getValue(DispenserBlock.FACING)
+				source.getBlockState().getValue(DispenserBlock.FACING),
+				true
 		);
 		return stack;
 	}

@@ -16,23 +16,24 @@ import java.util.Optional;
 
 public class InWorldTransforms {
 
-	public static Optional<InteractionResult> pumpkinToMagicPumpkin(Level level, BlockPos pos, ItemStack item, Direction facing) {
+	public static Optional<InteractionResult> pumpkinToMagicPumpkin(Level level, BlockPos pos, ItemStack item, Direction facing, boolean consumeItem) {
 		BlockState state = level.getBlockState(pos);
 
 		if (state.getBlock() == Blocks.PUMPKIN && item.getItem() == KindledRegistry.MAGIC_DUST_ITEM.get()) {
 			level.setBlock(pos, KindledRegistry.MAGIC_PUMPKIN.get().defaultBlockState().setValue(MagicPumpkinBlock.FACING, facing), 3);
 
-			item.shrink(1);
-			if (level instanceof ServerLevel sl) {
+			if (consumeItem)
+				item.shrink(1);
+			if (level instanceof ServerLevel sl)
 				transformParticles(sl, pos);
-			}
+
 
 			return Optional.of(InteractionResult.CONSUME);
 		}
 		return Optional.empty();
 	}
 
-	public static Optional<InteractionResult> magicPumpkinToKindled(Level level, BlockPos pos, ItemStack item) {
+	public static Optional<InteractionResult> magicPumpkinToKindled(Level level, BlockPos pos, ItemStack item, boolean consumeItem) {
 		BlockState state = level.getBlockState(pos);
 
 		if (state.getBlock() == KindledRegistry.MAGIC_PUMPKIN.get() && Kindled.candles.containsKey(item.getItem())) {
@@ -42,10 +43,11 @@ public class InWorldTransforms {
 			kindled.setPos(pos.getX(), pos.getY(), pos.getZ());
 			level.addFreshEntity(kindled);
 
-			item.shrink(1);
-			if (level instanceof ServerLevel sl) {
+			if (consumeItem)
+				item.shrink(1);
+			if (level instanceof ServerLevel sl)
 				transformParticles(sl, pos);
-			}
+
 
 			return Optional.of(InteractionResult.CONSUME);
 		}
