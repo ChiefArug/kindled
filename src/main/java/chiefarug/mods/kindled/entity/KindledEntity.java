@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -26,20 +27,25 @@ import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import static chiefarug.mods.kindled.Kindled.LGGR;
+import static chiefarug.mods.kindled.Kindled.MODID;
 
 public class KindledEntity extends Monster implements Enemy {
 
@@ -52,6 +58,7 @@ public class KindledEntity extends Monster implements Enemy {
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
 	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
 	private int poofedness;
+	private static final ResourceLocation POOF_TABLE = new ResourceLocation(MODID, "entities/kindled/poof");
 
 	@Nullable
 	private DyeColor color;
@@ -129,17 +136,19 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	private void dropPoofLoot() { //FIXME: Loot table broken
-//		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
-//		ResourceLocation resourceLocation = new ResourceLocation(Kindled.MODID, "entities/kindled/poof");
-//		LootTable lootTable = this.level.getServer().getLootTables().get(resourceLocation);
-//		LootContext.Builder lootContext$builder = this.createLootContext(false, new DamageSource("kindled.poofed"));
-//		LootContext ctx = lootContext$builder.create(LootContextParamSets.ENTITY);
-//		lootTable.getRandomItems(ctx).forEach(this::spawnAtLocation);
-		ItemStack itemToDrop = new ItemStack(KindledRegistry.MAGIC_DUST_ITEM.get());
-		itemToDrop.setCount(this.random.nextInt(3));
-		ItemEntity droppedItem = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), itemToDrop);
-		droppedItem.setDefaultPickUpDelay();
-		this.level.addFreshEntity(droppedItem);
+		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
+
+		LootTable table = this.level.getServer().getLootTables().get(POOF_TABLE);
+		LootContext.Builder contextBuilder =  new LootContext.Builder((ServerLevel) level).withRandom(level.getRandom()).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.DAMAGE_SOURCE, new DamageSource("kindled.poofed")).withParameter(LootContextParams.ORIGIN, position());
+		if (lastHurtByPlayer != null)
+			contextBuilder.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, lastHurtByPlayer);
+
+		LootContext context = contextBuilder.create(LootContextParamSets.ENTITY);
+
+		List<ItemStack> lootedItems = table.getRandomItems(context);
+		for (ItemStack lootedItem : lootedItems) {
+			spawnAtLocation(lootedItem);
+		}
 	}
 
 	@Nullable
