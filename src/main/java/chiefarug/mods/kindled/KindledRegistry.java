@@ -56,6 +56,7 @@ public class KindledRegistry {
 	public static final RegistryObject<SoundEvent> KINDLED_HURT_SOUND = sound("kindled_hurt");
 	public static final RegistryObject<SoundEvent> KINDLED_SHOOT_SOUND = sound("kindled_shoot");
 	public static final RegistryObject<SoundEvent> KINDLED_POOF_SOUND = sound("kindled_poof");
+	public static final RegistryObject<SoundEvent> KINDLED_BULLET_HIT =sound("bullet_hit");
 
 	public static final RegistryObject<Block> MAGIC_PUMPKIN = BLOCK_REGISTRY.register("magic_pumpkin", () -> new MagicPumpkinBlock(BlockBehaviour.Properties.of().mapColor(DyeColor.ORANGE).pushReaction(PushReaction.NORMAL).sound(SoundType.WOOD)));
 	public static final RegistryItem MAGIC_PUMPKIN_ITEM = new RegistryItem(ITEM_REGISTRY.register("magic_pumpkin", () -> new BlockItem(MAGIC_PUMPKIN.get(), ITEM_PROPERTIES)));

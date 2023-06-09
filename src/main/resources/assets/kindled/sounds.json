@@ -26,5 +26,14 @@
       }
     ],
     "subtitle": "kindled.subtitles.kindled_poof"
+  },
+  "bullet_hit": {
+    "sounds": [
+      "entity/shulker_bullet/hit1",
+      "entity/shulker_bullet/hit2",
+      "entity/shulker_bullet/hit3",
+      "entity/shulker_bullet/hit4"
+    ],
+    "subtitle": "kindled.subtitles.bullet_hit"
   }
 }
