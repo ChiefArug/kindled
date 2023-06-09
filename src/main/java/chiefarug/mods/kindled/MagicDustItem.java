@@ -21,6 +21,8 @@ public class MagicDustItem extends Item {
 		BlockPos pos = context.getClickedPos();
 		ItemStack stack = context.getItemInHand();
 
+		if (player != null && player.isCrouching()) return InteractionResult.PASS;
+
 		if (player instanceof ServerPlayer) // Make sure to trigger advancement stuff
 			CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, stack);
 

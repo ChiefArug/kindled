@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -44,7 +45,7 @@ public class KindledBulletEntity extends ShulkerBullet {
 		Entity entity = pResult.getEntity();
 		Entity entity1 = this.getOwner();
 		LivingEntity livingentity = entity1 instanceof LivingEntity ? (LivingEntity) entity1 : null;
-		boolean flag = entity.hurt(DamageSource.indirectMobAttack(this, livingentity).setProjectile(), 2.5F);
+		boolean flag = entity.hurt(damageSources().mobProjectile(this, livingentity), 2.5F);
 		if (flag && livingentity != null) {
 			this.doEnchantDamageEffects(livingentity, entity);
 			if (entity instanceof LivingEntity) {

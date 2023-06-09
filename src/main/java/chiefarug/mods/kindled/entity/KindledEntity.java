@@ -14,6 +14,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -46,6 +48,7 @@ import java.util.List;
 
 import static chiefarug.mods.kindled.Kindled.LGGR;
 import static chiefarug.mods.kindled.Kindled.MODID;
+import static chiefarug.mods.kindled.KindledRegistry.POOF;
 
 public class KindledEntity extends Monster implements Enemy {
 
@@ -139,7 +142,7 @@ public class KindledEntity extends Monster implements Enemy {
 		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
 
 		LootTable table = this.level.getServer().getLootTables().get(POOF_TABLE);
-		LootContext.Builder contextBuilder =  new LootContext.Builder((ServerLevel) level).withRandom(level.getRandom()).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.DAMAGE_SOURCE, new DamageSource("kindled.poofed")).withParameter(LootContextParams.ORIGIN, position());
+		LootContext.Builder contextBuilder =  new LootContext.Builder((ServerLevel) level).withRandom(level.getRandom()).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.DAMAGE_SOURCE, KindledRegistry.poof(this)).withParameter(LootContextParams.ORIGIN, position());
 		if (lastHurtByPlayer != null)
 			contextBuilder.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, lastHurtByPlayer);
 
@@ -201,7 +204,7 @@ public class KindledEntity extends Monster implements Enemy {
 			}
 		}
 
-		if (source.isProjectile()) {
+		if (source.is(DamageTypes.MOB_PROJECTILE)) {
 			Entity entity1 = source.getDirectEntity();
 			if (entity1 != null) {
 				// Increase poof timer if they get hit by a floating bullet, and don't hurt if it's their own sort of bullet.

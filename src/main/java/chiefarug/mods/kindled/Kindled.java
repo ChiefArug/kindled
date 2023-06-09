@@ -2,6 +2,7 @@ package chiefarug.mods.kindled;
 
 import chiefarug.mods.kindled.entity.KindledEntity;
 import com.mojang.logging.LogUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -22,6 +23,7 @@ public class Kindled {
 	public static final String MODID = "kindled";
 	@SuppressWarnings("unused")
 	public static final Logger LGGR = LogUtils.getLogger();
+	public static final ResourceLocation MODRL = new ResourceLocation(MODID, MODID);
 
 	public Kindled() {
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
