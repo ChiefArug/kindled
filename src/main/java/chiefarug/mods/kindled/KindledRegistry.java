@@ -4,6 +4,7 @@ import chiefarug.mods.kindled.block.MagicPumpkinBlock;
 import chiefarug.mods.kindled.entity.KindledBulletEntity;
 import chiefarug.mods.kindled.entity.KindledEntity;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
@@ -64,15 +65,18 @@ public class KindledRegistry {
 	public static final ResourceKey<DamageType> POOF = ResourceKey.create(Registries.DAMAGE_TYPE, MODRL.withPath("poofed"));
 
 	public static final DeferredRegister<CreativeModeTab> TAB_REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-	public static final RegistryObject<CreativeModeTab> TAB = TAB_REGISTRY.register(MODID, () -> new CreativeModeTab.Builder(CreativeModeTab.Row.BOTTOM, 1).withTabsBefore(CreativeModeTabs.SEARCH).icon(MAGIC_PUMPKIN_ITEM).displayItems((config, builder) -> {
-		builder.accept(MAGIC_PUMPKIN_ITEM);
-		builder.accept(MAGIC_DUST_ITEM);
-		builder.accept(KINDLED_SPAWN_EGG);
+	public static final RegistryObject<CreativeModeTab> TAB = TAB_REGISTRY.register(MODID, () -> new CreativeModeTab.Builder(CreativeModeTab.Row.BOTTOM, 1)
+			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS).icon(MAGIC_PUMPKIN_ITEM)
+			.title(Component.translatable("itemGroup.kindled"))
+			.displayItems((config, builder) -> {
+				builder.accept(MAGIC_PUMPKIN_ITEM);
+				builder.accept(MAGIC_DUST_ITEM);
+				builder.accept(KINDLED_SPAWN_EGG);
 
-		Kindled.candles.keySet().forEach(candle ->
-				builder.accept(() -> candle)
-		);
-	}).build());
+				Kindled.candles.keySet().forEach(candle ->
+						builder.accept(() -> candle)
+				);
+			}).build());
 
 	@SubscribeEvent
 	public static void extraCreativeModeTabs(BuildCreativeModeTabContentsEvent event) {

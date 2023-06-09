@@ -252,12 +252,7 @@
               }
             }
           ],
-          "conditions": [
-            {
-              "condition": "minecraft:alternative",
-              "terms": []
-            }
-          ]
+          "conditions": []
         },
         {
           "type": "minecraft:item",
