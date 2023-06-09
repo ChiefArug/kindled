@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class DispenserBehaviour {
 
 	public static void registerBehaviours() {
-		DispenserBlock.registerBehavior(KindledRegistry.MAGIC_DUST_ITEM.get(), DispenserBehaviour::dispenseMagicDust);
+		DispenserBlock.registerBehavior(KindledRegistry.MAGIC_DUST_ITEM, DispenserBehaviour::dispenseMagicDust);
 		Kindled.candles.keySet().forEach(candle -> DispenserBlock.registerBehavior(candle, DispenserBehaviour::dispenseCandle));
 	}
 

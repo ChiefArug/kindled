@@ -14,7 +14,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -35,20 +34,23 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static chiefarug.mods.kindled.Kindled.LGGR;
-import static chiefarug.mods.kindled.Kindled.MODID;
-import static chiefarug.mods.kindled.KindledRegistry.POOF;
+import static chiefarug.mods.kindled.Kindled.MODRL;
+import static net.minecraft.world.level.storage.loot.parameters.LootContextParams.DAMAGE_SOURCE;
+import static net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN;
+import static net.minecraft.world.level.storage.loot.parameters.LootContextParams.THIS_ENTITY;
 
 public class KindledEntity extends Monster implements Enemy {
 
@@ -61,7 +63,7 @@ public class KindledEntity extends Monster implements Enemy {
 	// An ugly method to sync the entities current yBodRot, because vanilla doesn't seem to do that.
 	protected static final EntityDataAccessor<Float> DATA_ROTATION = SynchedEntityData.defineId(KindledEntity.class, EntityDataSerializers.FLOAT);
 	private int poofedness;
-	private static final ResourceLocation POOF_TABLE = new ResourceLocation(MODID, "entities/kindled/poof");
+	private static final ResourceLocation POOF_TABLE = MODRL.withPath("entities/kindled/poof");
 
 	@Nullable
 	private DyeColor color;
@@ -98,7 +100,7 @@ public class KindledEntity extends Monster implements Enemy {
 		if (DATA_COLOR_ID.equals(key)) {
 			setColor(this.entityData.get(DATA_COLOR_ID));
 		}
-		if (DATA_ROTATION.equals(key) && level.isClientSide()) {
+		if (DATA_ROTATION.equals(key) && level().isClientSide()) {
 			this.yBodyRot = this.entityData.get(DATA_ROTATION);
 		}
 	}
@@ -118,7 +120,7 @@ public class KindledEntity extends Monster implements Enemy {
 	@Override
 	public void tick() {
 		super.tick();
-		if (!this.isOnGround()) {
+		if (!this.onGround()) {
 			increaseCurrentPoofedness(2);
 		} else if (getCurrentPoofedness() > 0){
 			increaseCurrentPoofedness(-1);
@@ -130,7 +132,7 @@ public class KindledEntity extends Monster implements Enemy {
 
 	public void poof() {
 		dropPoofLoot();
-		if (level instanceof ServerLevel sl) {
+		if (level() instanceof ServerLevel sl) {
 			sl.sendParticles(ParticleTypes.CLOUD, this.getX(), this.getY(), this.getZ(), 50, 0.5D, 0.5D, 0.5D, 0.1D);
 		}
 		this.playSound(KindledRegistry.KINDLED_POOF_SOUND.get());
@@ -139,16 +141,17 @@ public class KindledEntity extends Monster implements Enemy {
 	}
 
 	private void dropPoofLoot() { //FIXME: Loot table broken
-		if (this.level.getServer() == null) return; // This should never happen but it shuts IntelliJ up
+		if (this.getServer() == null || !(level() instanceof ServerLevel serverLevel)) return; // This should never happen but it shuts IntelliJ up
 
-		LootTable table = this.level.getServer().getLootTables().get(POOF_TABLE);
-		LootContext.Builder contextBuilder =  new LootContext.Builder((ServerLevel) level).withRandom(level.getRandom()).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.DAMAGE_SOURCE, KindledRegistry.poof(this)).withParameter(LootContextParams.ORIGIN, position());
+		Map<LootContextParam<?>, Object> lootParamsMap = new HashMap<>(4);
+
 		if (lastHurtByPlayer != null)
-			contextBuilder.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, lastHurtByPlayer);
+			lootParamsMap.put(LootContextParams.LAST_DAMAGE_PLAYER, lastHurtByPlayer);
+		lootParamsMap.put(THIS_ENTITY, this);
+		lootParamsMap.put(DAMAGE_SOURCE, KindledRegistry.poof(this));
+		lootParamsMap.put(ORIGIN, position());
 
-		LootContext context = contextBuilder.create(LootContextParamSets.ENTITY);
-
-		List<ItemStack> lootedItems = table.getRandomItems(context);
+		List<ItemStack> lootedItems = this.getServer().getLootData().getLootTable(POOF_TABLE).getRandomItems(new LootParams(serverLevel, lootParamsMap, Map.of(), 0));
 		for (ItemStack lootedItem : lootedItems) {
 			spawnAtLocation(lootedItem);
 		}
@@ -352,7 +355,7 @@ public class KindledEntity extends Monster implements Enemy {
 				if (!target.isAlive()) {
 					kindled.setTarget(null);
 				} else {
-					return kindled.getLevel().getDifficulty() != Difficulty.PEACEFUL;
+					return kindled.level().getDifficulty() != Difficulty.PEACEFUL;
 				}
 			}
 
@@ -369,7 +372,6 @@ public class KindledEntity extends Monster implements Enemy {
 			return true;
 		}
 
-		@SuppressWarnings("SameReturnValue")
 		private boolean wtf(Direction dir) {
 			LGGR.error("How on earth did this happen. Got direction " + dir + " from Direction#fromYRot, should only be north, south, east or west. (This is to make the compiler happy, if anyone actually sees this error message, sorry. I suggest your pray to the bit flip gods that this never happens again)");
 			return false;
@@ -388,14 +390,14 @@ public class KindledEntity extends Monster implements Enemy {
 
 		@Override
 		public void tick() {
-			if (kindled.level.getDifficulty() == Difficulty.PEACEFUL || attackTime-- >= 0) return;
+			if (kindled.level().getDifficulty() == Difficulty.PEACEFUL || attackTime-- >= 0) return;
 
 			LivingEntity target = kindled.getTarget();
 			if (target == null) return;
 			if (kindled.distanceTo(target) <= 400D) {
 				this.attackTime = 60 + random.nextInt(40);
 				if (isFacingTarget(target)) {
-					kindled.level.addFreshEntity(new KindledBulletEntity(kindled.level, kindled, target, Direction.Axis.X));
+					kindled.level().addFreshEntity(new KindledBulletEntity(kindled.level(), kindled, target, Direction.Axis.X));
 					kindled.playSound(KindledRegistry.KINDLED_SHOOT_SOUND.get(), 2.0F, (kindled.random.nextFloat() - kindled.random.nextFloat()) * 0.2F + 1.0F);
 				} else {
 					kindled.spin();

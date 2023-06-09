@@ -3,7 +3,6 @@ package chiefarug.mods.kindled.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import org.joml.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -14,9 +13,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import org.jetbrains.annotations.NotNull;
 
+import static chiefarug.mods.kindled.Kindled.MODRL;
+
 public class KindledBulletRenderer extends ShulkerBulletRenderer {
 
-	private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("kindled:textures/entity/kindled/bullet.png");
+	private static final ResourceLocation TEXTURE_LOCATION = MODRL.withPath("textures/entity/kindled/bullet.png");
 	private static final RenderType RENDER_TYPE = RenderType.entityTranslucent(TEXTURE_LOCATION);
 
 	public KindledBulletRenderer(EntityRendererProvider.Context pContext) {
@@ -32,7 +33,6 @@ public class KindledBulletRenderer extends ShulkerBulletRenderer {
 	@Override
 	public void render(ShulkerBullet pEntity, float pEntityYaw, float pPartialTicks, PoseStack pMatrixStack, MultiBufferSource pBuffer, int pPackedLight) {
 		pMatrixStack.pushPose();
-		//noinspection deprecation
 		float f = Mth.rotLerp(pEntity.yRotO, pEntity.getYRot(), pPartialTicks);
 		float f1 = Mth.lerp(pPartialTicks, pEntity.xRotO, pEntity.getXRot());
 		float f2 = (float) pEntity.tickCount + pPartialTicks;

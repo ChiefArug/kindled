@@ -14,16 +14,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+import static chiefarug.mods.kindled.Kindled.MODRL;
+
 public class KindledRenderer extends MobRenderer<KindledEntity, KindledModel> {
 
 	static final Map<DyeColor, ResourceLocation> SHELL_TEXTURES = new HashMap<>();
 	static {
-		SHELL_TEXTURES.put(null,  new ResourceLocation("kindled:textures/entity/kindled/shell.png"));
+		SHELL_TEXTURES.put(null,  MODRL.withPath("textures/entity/kindled/shell.png"));
 		for (DyeColor color : DyeColor.values()) {
-			SHELL_TEXTURES.put(color, new ResourceLocation("kindled:textures/entity/kindled/shell_" + color.getSerializedName() + ".png"));
+			SHELL_TEXTURES.put(color, MODRL.withPath("textures/entity/kindled/shell_" + color.getSerializedName() + ".png"));
 		}
 	}
-	static final ResourceLocation MODEL_LOCATION = new ResourceLocation("kindled:kindled");
+	static final ResourceLocation MODEL_LOCATION = MODRL;
 	private static final ModelLayerLocation MODEL_LAYER_LOCATION = new ModelLayerLocation(MODEL_LOCATION, "main");
 
 	public KindledRenderer(EntityRendererProvider.Context context) {

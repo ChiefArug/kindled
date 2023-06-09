@@ -19,7 +19,7 @@ public class InWorldTransforms {
 	public static Optional<InteractionResult> pumpkinToMagicPumpkin(Level level, BlockPos pos, ItemStack item, Direction facing, boolean consumeItem) {
 		BlockState state = level.getBlockState(pos);
 
-		if (state.getBlock() == Blocks.PUMPKIN && item.getItem() == KindledRegistry.MAGIC_DUST_ITEM.get()) {
+		if (state.getBlock() == Blocks.PUMPKIN && item.getItem() == KindledRegistry.MAGIC_DUST_ITEM.asItem()) {
 			level.setBlock(pos, KindledRegistry.MAGIC_PUMPKIN.get().defaultBlockState().setValue(MagicPumpkinBlock.FACING, horizontalize(facing)), 3);
 
 			if (consumeItem)

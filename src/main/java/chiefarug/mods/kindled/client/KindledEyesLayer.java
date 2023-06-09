@@ -16,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static chiefarug.mods.kindled.Kindled.MODRL;
+
 public class KindledEyesLayer extends EyesLayer<KindledEntity, KindledModel> {
 
 	private static final Map<DyeColor, RenderType> KINDLED_EYES = new HashMap<>();
@@ -31,9 +33,9 @@ public class KindledEyesLayer extends EyesLayer<KindledEntity, KindledModel> {
 	}
 
 	private static RenderType renderTypeForColor(@Nullable DyeColor color) {
-		ResourceLocation rl = new ResourceLocation("kindled:textures/entity/kindled/eyes.png");
+		ResourceLocation rl = MODRL.withPath("textures/entity/kindled/eyes.png");
 		if (color != null) {
-			rl = new ResourceLocation("kindled:textures/entity/kindled/eyes_" + color.getSerializedName() + ".png");
+			rl = MODRL.withPath("textures/entity/kindled/eyes_" + color.getSerializedName() + ".png");
 		}
 		return RenderType.eyes(rl);
 

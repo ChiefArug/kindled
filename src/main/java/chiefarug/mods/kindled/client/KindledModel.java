@@ -13,15 +13,14 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-import static chiefarug.mods.kindled.Kindled.MODID;
+import static chiefarug.mods.kindled.Kindled.MODRL;
 
 // Made with Blockbench 4.3.1
 public class KindledModel extends EntityModel<KindledEntity> implements HeadedModel {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(MODID, "kindled"), "main");
+	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(MODRL, "main");
 	private final ModelPart main;
 
 	public KindledModel(ModelPart root) {
