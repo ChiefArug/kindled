@@ -1,6 +1,6 @@
 {
-  "name": "kindled:haunt/up",
-  "fallback": "minecraft:empty",
+  "name": "kindled:haunt/side",
+  "fallback": "kindled:haunt/end_horizontal",
   "elements": [
     {
       "weight": 3,

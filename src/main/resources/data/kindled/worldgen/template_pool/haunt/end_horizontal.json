@@ -1,0 +1,13 @@
+{
+  "name": "kindled:haunt/end_horizontal",
+  "fallback": "minecraft:empty",
+  "elements": [{
+    "weight": 1,
+    "element": {
+      "element_type": "minecraft:single_pool_element",
+      "projection": "rigid",
+      "location": "kindled:haunt/end_horizontal",
+      "processors": "minecraft:empty"
+    }
+  }]
+}
